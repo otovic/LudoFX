@@ -8,10 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -19,41 +16,41 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        GameMode gameMode = new GameMode("test", new LudoGameState());
+        GameMode gameMode = new GameMode("test", "test", new LudoGameState());
 
         BorderPane v = new BorderPane();
         v.setPrefHeight(780);
         v.setPrefWidth(1300);
         v.setStyle("-fx-background-color: #ffffff;");
 
-        HBox h = new HBox();
-        h.setPrefHeight(120);
-        h.setPrefWidth(1300);
-        h.setStyle("-fx-border-style: solid solid solid solid; -fx-border-color: black black black red;");
+        HBox top = new HBox();
+        top.setPrefHeight(120);
+        top.setPrefWidth(1300);
+        top.setStyle("-fx-border-style: solid solid solid solid; -fx-border-color: black black black red;");
 
-        VBox left = new VBox();
-        left.setMaxHeight(100);
-        left.setPrefWidth(200);
-        left.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
+        VBox player1 = new VBox();
+        player1.setMaxHeight(100);
+        player1.setPrefWidth(200);
+        player1.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
 
         VBox middle = new VBox();
         middle.setMaxHeight(100);
         middle.setPrefWidth(850);
         middle.setStyle("-fx-border-style: solid solid solid solid; -fx-border-color: black black black red;");
 
-        VBox right = new VBox();
-        right.setMaxHeight(100);
-        right.setPrefWidth(200);
-        right.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
+        VBox player2 = new VBox();
+        player2.setMaxHeight(100);
+        player2.setPrefWidth(200);
+        player2.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
+
+        top.setAlignment(Pos.CENTER);
+        top.setSpacing(10);
+        top.getChildren().addAll(player1, middle, player2);
 
         HBox boardContainer = new HBox();
         boardContainer.setStyle("-fx-background-color: red; -fx-border-style: solid solid solid solid; -fx-border-color: green black black red;");
 
         boardContainer.getChildren().addAll(createBoard(gameMode));
-
-        h.setAlignment(Pos.CENTER);
-        h.setSpacing(10);
-        h.getChildren().addAll(left, middle, right);
 
         VBox chatContainer = new VBox();
         chatContainer.setPrefHeight(540);
@@ -89,7 +86,7 @@ public class HelloApplication extends Application {
         butum.setSpacing(10);
         butum.getChildren().addAll(player3, midBot, player4);
 
-        v.setTop(h);
+        v.setTop(top);
         v.setLeft(chatContainer);
         v.setRight(scoreBoards);
         v.setCenter(boardContainer);
@@ -101,9 +98,11 @@ public class HelloApplication extends Application {
         stage.show();
 
         gameMode.printState();
-        gameMode.addFigure();
-
         gameMode.moveFigure();
+        gameMode.state.addPlayer("1", "petar");
+        gameMode.state.addPlayer("2", "svetozar");
+        gameMode.state.addPlayer("3", "tadzudin");
+        gameMode.state.addPlayer("4", "dimitar");
     }
 
     public static VBox createBoard(final GameMode gameMode) {
@@ -205,14 +204,15 @@ public class HelloApplication extends Application {
     }
 
     public static Pane createField(final GameMode gameMode, final String id, final String color) {
-        Pane pattern = new Pane();
+        StackPane pattern = new StackPane();
 //        Label label = new Label(id);
 //        label.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: orange;");
 //        pattern.getChildren().add(label);
         pattern.setMaxHeight(40);
         pattern.setPrefWidth(40);
-        pattern.setStyle("-fx-background-color: " + color + ";-fx-border-style: solid solid solid solid; -fx-border-color: black black black black;");
+        pattern.setStyle("-fx-background-color: " + color + ";-fx-border-style: solid solid solid solid; -fx-border-color: black black black black; ");
         gameMode.addField(id, null, pattern);
+        pattern.setAlignment(Pos.CENTER);
         return pattern;
     }
 
