@@ -21,10 +21,14 @@ public class LudoGameState {
         this.fields.put(id, new Field(player, field));
     }
 
-    public void addPlayer(final String id, final String username) {
-        this.players.put(id, new Player(id, new PlayerState(username, this.createFigures())));
+    public void addPlayer(final String id, final String username, final int color) {
+        this.players.put(id, new Player(id, new PlayerState(username, this.createFigures(), color)));
         this.spawnPlayer(id, username);
         this.playersAdded++;
+    }
+
+    public Player getPlayer(final String id) {
+        return this.players.get(id);
     }
 
     public void spawnPlayer(final String id, final String username) {

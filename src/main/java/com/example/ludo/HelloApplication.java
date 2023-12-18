@@ -99,10 +99,14 @@ public class HelloApplication extends Application {
 
         gameMode.printState();
         gameMode.moveFigure();
-        gameMode.state.addPlayer("1", "petar");
-        gameMode.state.addPlayer("2", "svetozar");
-        gameMode.state.addPlayer("3", "tadzudin");
-        gameMode.state.addPlayer("4", "dimitar");
+        gameMode.state.addPlayer("1", "petar", 1);
+        gameMode.state.players.get("1").state.setPlayerBox(player1);
+        gameMode.state.addPlayer("2", "svetozar", 2);
+        gameMode.state.players.get("2").state.setPlayerBox(player2);
+        gameMode.state.addPlayer("3", "tadzudin", 3);
+        gameMode.state.players.get("3").state.setPlayerBox(player3);
+        gameMode.state.addPlayer("4", "dimitar", 4);
+        gameMode.state.players.get("4").state.setPlayerBox(player4);
     }
 
     public static VBox createBoard(final GameMode gameMode) {
