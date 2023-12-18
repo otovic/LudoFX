@@ -67,24 +67,24 @@ public class HelloApplication extends Application {
         butum.setPrefWidth(1300);
         butum.setStyle("-fx-border-style: solid solid solid solid; -fx-border-color: black black black red;");
 
-        VBox player3 = new VBox();
-        player3.setMaxHeight(100);
-        player3.setPrefWidth(200);
-        player3.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
+        VBox player4 = new VBox();
+        player4.setMaxHeight(100);
+        player4.setPrefWidth(200);
+        player4.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: red red black red;");
 
         VBox midBot = new VBox();
         midBot.setMaxHeight(100);
         midBot.setPrefWidth(850);
         midBot.setStyle("-fx-border-style: solid solid solid solid; -fx-border-color: black black black red;");
 
-        VBox player4 = new VBox();
-        player4.setMaxHeight(100);
-        player4.setPrefWidth(200);
-        player4.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
+        VBox player3 = new VBox();
+        player3.setMaxHeight(100);
+        player3.setPrefWidth(200);
+        player3.setStyle("-fx-border-style: solid solid solid solid; -fx-border-radius: 10; -fx-border-color: black black black red;");
 
         butum.setAlignment(Pos.CENTER);
         butum.setSpacing(10);
-        butum.getChildren().addAll(player3, midBot, player4);
+        butum.getChildren().addAll(player4, midBot, player3);
 
         v.setTop(top);
         v.setLeft(chatContainer);
@@ -97,8 +97,8 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        gameMode.printState();
-        gameMode.moveFigure();
+//        gameMode.printState();
+//        gameMode.moveFigure();
         gameMode.state.addPlayer("1", "petar", 1);
         gameMode.state.players.get("1").state.setPlayerBox(player1);
         gameMode.state.addPlayer("2", "svetozar", 2);
@@ -107,6 +107,8 @@ public class HelloApplication extends Application {
         gameMode.state.players.get("3").state.setPlayerBox(player3);
         gameMode.state.addPlayer("4", "dimitar", 4);
         gameMode.state.players.get("4").state.setPlayerBox(player4);
+
+        gameMode.start();
     }
 
     public static VBox createBoard(final GameMode gameMode) {

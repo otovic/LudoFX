@@ -9,6 +9,7 @@ import java.util.List;
 public class LudoGameState {
     public HashMap<String, Field> fields = new HashMap<String, Field>();
     public HashMap<String, Player> players = new HashMap<String, Player>();
+    public int turn = 1;
 
     public int blueDestinationReached = 0;
     public int yellowDestinationReached = 0;
@@ -18,12 +19,12 @@ public class LudoGameState {
     public int playersAdded = 0;
 
     public void addField(final String id, final Player player, final Pane field) {
-        this.fields.put(id, new Field(player, field));
+        this.fields.put(id, new Field(null, field));
     }
 
     public void addPlayer(final String id, final String username, final int color) {
-        this.players.put(id, new Player(id, new PlayerState(username, this.createFigures(), color)));
-        this.spawnPlayer(id, username);
+        this.players.put(id, new Player(id, new PlayerState(username, this.createFigures(), color, this)));
+        this.spawnPlayer(id, color);
         this.playersAdded++;
     }
 
@@ -31,10 +32,12 @@ public class LudoGameState {
         return this.players.get(id);
     }
 
-    public void spawnPlayer(final String id, final String username) {
+    public void spawnPlayer(final String id, final int color) {
         String prefix = this.getPrefix();
         for (Figure figure : this.players.get(id).state.playerFigures) {
-            this.fields.get(figure.fieldID).field.getChildren().add(figure.generateFigure());
+            Field f = this.fields.get(figure.fieldID);
+            f.field.getChildren().add(figure.generateFigure());
+            f.color = color;
         }
     }
 
@@ -48,13 +51,46 @@ public class LudoGameState {
 
     public List<Figure> createFigures() {
         List<Figure> figures = new ArrayList<Figure>();
-
         String idPrefix = this.getPrefix();
-
         for (int i=0; i<4; i++) {
             figures.add(new Figure(idPrefix + String.valueOf(i + 1), "h" + idPrefix + String.valueOf(i + 1)));
         }
-
         return figures;
+    }
+
+    public void newPlayerTurn() {
+        if (this.turn + 1 > 4) {
+            this.turn = 1;
+        } else {
+            this.turn++;
+        }
+        this.start();
+    }
+
+    public void start() {
+        if (this.turn == 1) {
+            this.players.get("1").state.createDiceRoller();
+            this.players.get("2").state.createHouse();
+            this.players.get("3").state.createHouse();
+            this.players.get("4").state.createHouse();
+        }
+        if (this.turn == 2) {
+            this.players.get("2").state.createDiceRoller();
+            this.players.get("1").state.createHouse();
+            this.players.get("3").state.createHouse();
+            this.players.get("4").state.createHouse();
+        }
+        if (this.turn == 3) {
+            this.players.get("3").state.createDiceRoller();
+            this.players.get("1").state.createHouse();
+            this.players.get("2").state.createHouse();
+            this.players.get("4").state.createHouse();
+        }
+        if (this.turn == 4) {
+            this.players.get("4").state.createDiceRoller();
+            this.players.get("1").state.createHouse();
+            this.players.get("2").state.createHouse();
+            this.players.get("3").state.createHouse();
+        }
     }
 }

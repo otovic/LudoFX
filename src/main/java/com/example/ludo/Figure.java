@@ -18,8 +18,7 @@ public class Figure {
         this.fieldID = fieldID;
     }
 
-    private String getColor() {
-        System.out.println(this.figureID.split("")[0]);
+    public String getColor() {
         switch (this.figureID.split("")[0]) {
             case "b":
                 return "#639fff";

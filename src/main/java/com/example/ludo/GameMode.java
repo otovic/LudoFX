@@ -27,6 +27,10 @@ public class GameMode {
         System.out.println(this.state.fields);
     }
 
+    public void start() {
+        this.state.start();
+    }
+
 //    public void addFigure() {
 //        this.state.fields.get("1").field.getChildren().add(new Figure().generateFigure());
 //    }

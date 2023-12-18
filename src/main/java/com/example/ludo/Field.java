@@ -3,11 +3,11 @@ package com.example.ludo;
 import javafx.scene.layout.Pane;
 
 public class Field {
-    public Player player;
+    public Integer color;
     public Pane field;
 
-    public Field(Player player, Pane field) {
-        this.player = player;
+    public Field(Integer color, Pane field) {
+        this.color = color;
         this.field = field;
     }
 }
