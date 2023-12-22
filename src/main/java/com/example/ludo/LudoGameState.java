@@ -19,7 +19,7 @@ public class LudoGameState {
     public int playersAdded = 0;
 
     public void addField(final String id, final Player player, final Pane field) {
-        this.fields.put(id, new Field(null, field));
+        this.fields.put(id, new Field(null, null, field));
     }
 
     public void addPlayer(final String id, final String username, final int color) {

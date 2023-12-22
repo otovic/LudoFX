@@ -18,7 +18,7 @@ public class Figure {
         this.fieldID = fieldID;
     }
 
-    public String getColor() {
+    public String getHexColor() {
         switch (this.figureID.split("")[0]) {
             case "b":
                 return "#639fff";
@@ -46,6 +46,19 @@ public class Figure {
             default:
                 return "musk.png";
         }
+    }
+
+    public int getIntColor() {
+        return switch (this.figureID.split("")[0]) {
+            case "y" -> 2;
+            case "r" -> 3;
+            case "g" -> 4;
+            default -> 1;
+        };
+    }
+
+    public String getColor() {
+        return this.figureID.split("")[0];
     }
 
     public BorderPane generateFigure() {
