@@ -191,6 +191,40 @@ public class PlayerState {
         this.diceRoller.getChildren().addAll(diceView);
     }
 
+    private int getRolledInt(final String rolled) {
+        switch (rolled) {
+            case "one.png" -> {
+                return 1;
+            }
+            case "two.png" -> {
+                return 2;
+            }
+            case "three.png" -> {
+                return 3;
+            }
+            case "four.png" -> {
+                return 4;
+            }
+            case "five.png" -> {
+                return 5;
+            }
+            case "six.png" -> {
+                return 6;
+            }
+        }
+        return 1;
+    }
+
+    private boolean canMoveToNewField(final String rolled, final String current) {
+        final int roll = getRolledInt(rolled);
+                int currentInt = Integer.parseInt(current);
+                if (currentInt + roll > 40) {
+                    return gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure == null || gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure.getIntColor() != this.color;
+                } else {
+                    return gameState.fields.get(String.valueOf(currentInt + roll)).figure == null || gameState.fields.get(String.valueOf(currentInt + roll)).figure.getIntColor() != this.color;
+                }
+    }
+
     public void showPossibleMoves(final String rlled) {
         final String rolled = "six.png";
         boolean canMove = false;
@@ -198,6 +232,13 @@ public class PlayerState {
             if (rolled.equals("six.png")) {
                 if (figure.fieldID.startsWith("h")) {
                     String fieldNumber = this.getFirstFieldBasedOnColor(figure.figureID);
+                    System.out.println(fieldNumber);
+                    try {
+                        System.out.println(gameState.fields.get(fieldNumber).figure.getIntColor());
+                    }
+                    catch (Exception e) {
+                        System.out.println("No figure");
+                    }
                     if (gameState.fields.get(fieldNumber).figure == null || gameState.fields.get(fieldNumber).figure.getIntColor() != this.color) {
                         canMove = true;
                         figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
@@ -211,16 +252,18 @@ public class PlayerState {
                         });
                     }
                 } else if (!figure.fieldID.contains("d")) {
-                    canMove = true;
-                    figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                    figure.figure.setOnMouseClicked(event -> {
-                        this.playerFigures.stream()
-                                .forEach(f -> {
-                                    f.figure.setOnMouseClicked(null);
-                                    f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                });
-                        this.moveFigure(rolled, figure);
-                    });
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
                 }
             }
             if (rolled.equals("one.png")) {
@@ -314,6 +357,7 @@ public class PlayerState {
                             int nextPostiion = 0;
                             if (pos + finalI > 40) {
                                 currentPosition = String.valueOf(pos + finalI - 40 - 1);
+                                if (currentPosition.equals("0")) currentPosition = "40";
                                 nextPostiion = pos + finalI - 40;
                             } else {
                                 if (finalI == 1) {
@@ -537,6 +581,7 @@ public class PlayerState {
                 if (this.gameState.fields.get("h" + presentFigureID + i).figure == null) {
                     this.gameState.fields.get("h" + presentFigureID + i).figure = figure;
                     this.gameState.fields.get("h" + presentFigureID + i).field.getChildren().add(figure.figure);
+                    figure.fieldID = "h" + presentFigureID + i;
                     break;
                 }
             }

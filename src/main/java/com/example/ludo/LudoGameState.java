@@ -37,6 +37,7 @@ public class LudoGameState {
         for (Figure figure : this.players.get(id).state.playerFigures) {
             Field f = this.fields.get(figure.fieldID);
             f.field.getChildren().add(figure.generateFigure());
+            f.figure = figure;
             f.color = color;
         }
     }
