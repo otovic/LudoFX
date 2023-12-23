@@ -59,6 +59,37 @@ public class LudoGameState {
         return figures;
     }
 
+    public int getGotHome(final String color) {
+        if (color.equals("b")) {
+            return this.blueDestinationReached;
+        }
+        if (color.equals("y")) {
+            return this.yellowDestinationReached;
+        }
+        if (color.equals("r")) {
+            return this.redDestinationReached;
+        }
+        if (color.equals("g")) {
+            return this.greenDestinationReached;
+        }
+        return 0;
+    }
+
+    public void gotHome(final String color) {
+        if (color.equals("b")) {
+            this.blueDestinationReached++;
+        }
+        if (color.equals("y")) {
+            this.yellowDestinationReached++;
+        }
+        if (color.equals("r")) {
+            this.redDestinationReached++;
+        }
+        if (color.equals("g")) {
+            this.greenDestinationReached++;
+        }
+    }
+
     public void newPlayerTurn() {
         if (this.turn + 1 > 4) {
             this.turn = 1;

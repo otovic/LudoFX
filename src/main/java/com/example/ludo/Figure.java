@@ -64,7 +64,7 @@ public class Figure {
     public BorderPane generateFigure() {
         BorderPane figure = new BorderPane();
         figure.setPrefSize(35, 35);
-        figure.setStyle("-fx-background-color: " + this.getColor() + "; -fx-background-radius: 50; -fx-border-color: #000000; -fx-border-width: 2px; -fx-border-radius: 50;");
+        figure.setStyle("-fx-background-color: " + this.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: #000000; -fx-border-width: 2px; -fx-border-radius: 50;");
         Image image = new Image(this.getImage());
         ImageView imageView = new ImageView(image);
         figure.setCenter(imageView);

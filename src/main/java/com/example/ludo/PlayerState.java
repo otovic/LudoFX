@@ -97,7 +97,14 @@ public class PlayerState {
         playerBox.getChildren().addAll(data);
     }
 
-    private StackPane createBoxy() {
+    private StackPane createBoxy(final int index) {
+        if (index <= gameState.getGotHome(this.getFieldIDBasedOnColor(this.color))) {
+            StackPane stackPane = new StackPane();
+            stackPane.setMaxHeight(20);
+            stackPane.setPrefWidth(20);
+            stackPane.setStyle("-fx-background-color: " + this.getColorAsString() + "; -fx-background-radius: 50; -fx-border-color: #000000; -fx-border-width: 2px; -fx-border-radius: 50;");
+            return stackPane;
+        }
         StackPane stackPane = new StackPane();
         stackPane.setMaxHeight(20);
         stackPane.setPrefWidth(20);
@@ -113,7 +120,7 @@ public class PlayerState {
         firstHouseRow.setPrefHeight(25);
 //        firstHouseRow.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
         firstHouseRow.setSpacing(20);
-        firstHouseRow.getChildren().addAll(this.createBoxy(), this.createBoxy());
+        firstHouseRow.getChildren().addAll(this.createBoxy(1), this.createBoxy(2));
 
         HBox secondHouseRow = new HBox();
         secondHouseRow.setAlignment(Pos.CENTER);
@@ -121,7 +128,7 @@ public class PlayerState {
         secondHouseRow.setPrefHeight(25);
 //        secondHouseRow.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
         secondHouseRow.setSpacing(20);
-        secondHouseRow.getChildren().addAll(this.createBoxy(), this.createBoxy());
+        secondHouseRow.getChildren().addAll(this.createBoxy(3), this.createBoxy(4));
         this.diceRoller.getChildren().addAll(firstHouseRow, secondHouseRow);
     }
 
@@ -218,6 +225,9 @@ public class PlayerState {
     private boolean canMoveToNewField(final String rolled, final String current) {
         final int roll = getRolledInt(rolled);
                 int currentInt = Integer.parseInt(current);
+                if (currentInt <= this.max && (roll + currentInt) > this.max) {
+                    return !this.calculateDestinationPoistion(currentInt, roll).equals("cant");
+                }
                 if (currentInt + roll > 40) {
                     return gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure == null || gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure.getIntColor() != this.color;
                 } else {
@@ -226,19 +236,12 @@ public class PlayerState {
     }
 
     public void showPossibleMoves(final String rlled) {
-        final String rolled = "six.png";
+        String rolled = "six.png";
         boolean canMove = false;
         for (Figure figure : this.playerFigures) {
             if (rolled.equals("six.png")) {
                 if (figure.fieldID.startsWith("h")) {
                     String fieldNumber = this.getFirstFieldBasedOnColor(figure.figureID);
-                    System.out.println(fieldNumber);
-                    try {
-                        System.out.println(gameState.fields.get(fieldNumber).figure.getIntColor());
-                    }
-                    catch (Exception e) {
-                        System.out.println("No figure");
-                    }
                     if (gameState.fields.get(fieldNumber).figure == null || gameState.fields.get(fieldNumber).figure.getIntColor() != this.color) {
                         canMove = true;
                         figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
@@ -268,58 +271,82 @@ public class PlayerState {
             }
             if (rolled.equals("one.png")) {
                 if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    canMove = true;
-                    figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                    figure.figure.setOnMouseClicked(event -> {
-                        this.playerFigures.stream()
-                                .forEach(f -> {
-                                    f.figure.setOnMouseClicked(null);
-                                    f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                });
-                        this.moveFigure(rolled, figure);
-                    });
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
                 }
             }
             if (rolled.equals("two.png")) {
                 if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    canMove = true;
-                    figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                    figure.figure.setOnMouseClicked(event -> {
-                        this.playerFigures.stream()
-                                .forEach(f -> {
-                                    f.figure.setOnMouseClicked(null);
-                                    f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                });
-                        this.moveFigure(rolled, figure);
-                    });
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
                 }
             }
             if (rolled.equals("three.png")) {
                 if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    canMove = true;
-                    figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                    figure.figure.setOnMouseClicked(event -> {
-                        this.playerFigures.stream()
-                                .forEach(f -> {
-                                    f.figure.setOnMouseClicked(null);
-                                    f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                });
-                        this.moveFigure(rolled, figure);
-                    });
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
                 }
             }
             if (rolled.equals("four.png")) {
                 if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    canMove = true;
-                    figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                    figure.figure.setOnMouseClicked(event -> {
-                        this.playerFigures.stream()
-                                .forEach(f -> {
-                                    f.figure.setOnMouseClicked(null);
-                                    f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                });
-                        this.moveFigure(rolled, figure);
-                    });
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
+                }
+            }
+            if (rolled.equals("five.png")) {
+                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
+                    if (canMoveToNewField(rolled, figure.fieldID)) {
+                        canMove = true;
+                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                        figure.figure.setOnMouseClicked(event -> {
+                            this.playerFigures.stream()
+                                    .forEach(f -> {
+                                        f.figure.setOnMouseClicked(null);
+                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                    });
+                            this.moveFigure(rolled, figure);
+                        });
+                    }
                 }
             }
         }
@@ -344,9 +371,44 @@ public class PlayerState {
                 gameState.fields.get(figure.fieldID).figure = null;
                 int pos = Integer.parseInt(figure.fieldID);
                 if (pos <= this.max && pos + 6 > this.max) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                    gameState.fields.get("d" + String.valueOf(pos + 6 - this.max)).field.getChildren().add(figure.figure);
-                    gameState.fields.get("d" + String.valueOf(pos + 6 - this.max)).color = this.color;
+                    final String destinationField = this.calculateDestinationPoistion(pos, 6);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 7; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().size() > 1 && finalI > 1) {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().clear();
+                            }
+                            if (finalI == 6) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
                 } else {
                     Timeline timeline = new Timeline();
                     for (int i = 1; i < 7; i++) {
@@ -354,18 +416,18 @@ public class PlayerState {
                         int finalI = i;
                         KeyFrame keyFrame = new KeyFrame(duration, event -> {
                             String currentPosition = "";
-                            int nextPostiion = 0;
+                            int nextPosition = 0;
                             if (pos + finalI > 40) {
                                 currentPosition = String.valueOf(pos + finalI - 40 - 1);
                                 if (currentPosition.equals("0")) currentPosition = "40";
-                                nextPostiion = pos + finalI - 40;
+                                nextPosition = pos + finalI - 40;
                             } else {
                                 if (finalI == 1) {
                                     currentPosition = String.valueOf(pos);
-                                    nextPostiion = pos + 1;
+                                    nextPosition = pos + 1;
                                 } else {
                                     currentPosition = String.valueOf(pos + finalI - 1);
-                                    nextPostiion = pos + finalI;
+                                    nextPosition = pos + finalI;
                                 }
                             }
                             if (gameState.fields.get(String.valueOf(currentPosition)).field.getChildren().size() > 1 && finalI != 6) {
@@ -374,13 +436,13 @@ public class PlayerState {
                                 gameState.fields.get(String.valueOf(currentPosition)).field.getChildren().clear();
                             }
                             if (finalI == 6) {
-                                this.removeChildrenFromField(String.valueOf(nextPostiion));
-                                gameState.fields.get(String.valueOf(nextPostiion)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPostiion)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPostiion);
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
                                 gameState.newPlayerTurn();
                             } else {
-                                gameState.fields.get(String.valueOf(nextPostiion)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                             }
                         });
                         timeline.getKeyFrames().add(keyFrame);
@@ -391,11 +453,42 @@ public class PlayerState {
         }
         if (rolled.equals("one.png")) {
             if (!figure.fieldID.contains("d")) {
+                gameState.fields.get(figure.fieldID).figure = null;
                 int pos = Integer.parseInt(figure.fieldID);
                 if (pos <= this.max && pos + 1 > this.max) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                    gameState.fields.get("d" + String.valueOf(pos + 1 - this.max)).field.getChildren().add(figure.figure);
-                    gameState.fields.get("d" + String.valueOf(pos + 1 - this.max)).color = this.color;
+                    final String destinationField = this.calculateDestinationPoistion(pos, 1);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 2; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (finalI == 1) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
                 } else {
                     gameState.fields.get(figure.fieldID).figure = null;
                     Timeline timeline = new Timeline();
@@ -403,23 +496,29 @@ public class PlayerState {
                         Duration duration = Duration.millis(500 * i);
                         int finalI = i;
                         KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String position = "";
-                            int positionInt = 0;
+                            String currentPosition = "";
+                            int nextPosition = 0;
                             if (pos + finalI > 40) {
-                                position = String.valueOf(pos + finalI - 40);
-                                positionInt = pos + finalI - 40;
-                            }   else {
-                                position = String.valueOf(pos + finalI - 1);
-                                positionInt = pos + finalI - 1;
+                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
+                                if (currentPosition.equals("0")) currentPosition = "40";
+                                nextPosition = pos + finalI - 40;
+                            } else {
+                                if (finalI == 1) {
+                                    currentPosition = String.valueOf(pos);
+                                    nextPosition = pos + 1;
+                                } else {
+                                    currentPosition = String.valueOf(pos + finalI - 1);
+                                    nextPosition = pos + finalI;
+                                }
                             }
                             if (finalI == 1) {
-                                this.removeChildrenFromField(String.valueOf(positionInt + 1));
-                                gameState.fields.get(String.valueOf(positionInt + 1)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(positionInt + 1)).figure = figure;
-                                figure.fieldID = String.valueOf(pos + finalI);
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
                                 gameState.newPlayerTurn();
                             } else {
-                                gameState.fields.get(String.valueOf(positionInt + 1)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                             }
                         });
                         timeline.getKeyFrames().add(keyFrame);
@@ -429,46 +528,77 @@ public class PlayerState {
             }
         }
         if (rolled.equals("two.png")) {
-            if (figure.fieldID.startsWith("h")) {
-                gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                gameState.fields.get(getFirstFieldBasedOnColor(figure.figureID)).field.getChildren().add(figure.figure);
-                gameState.fields.get(getFirstFieldBasedOnColor(figure.figureID)).color = this.color;
-            } else if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
+            if (!figure.fieldID.contains("d")) {
                 gameState.fields.get(figure.fieldID).figure = null;
                 int pos = Integer.parseInt(figure.fieldID);
                 if (pos <= this.max && pos + 2 > this.max) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                    gameState.fields.get("d" + String.valueOf(pos + 2 - this.max)).field.getChildren().add(figure.figure);
-                    gameState.fields.get("d" + String.valueOf(pos + 2 - this.max)).color = this.color;
+                    final String destinationField = this.calculateDestinationPoistion(pos, 2);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 3; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI == 2) {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
+                            }
+                            if (finalI == 2) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
                 } else {
                     Timeline timeline = new Timeline();
                     for (int i = 1; i < 3; i++) {
                         Duration duration = Duration.millis(500 * i);
                         int finalI = i;
                         KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String position = "";
-                            int positionInt = 0;
+                            String currentPosition = "";
+                            int nextPosition = 0;
                             if (pos + finalI > 40) {
-                                position = String.valueOf(pos + finalI - 40);
-                                positionInt = pos + finalI - 40;
-                            }   else {
-                                position = String.valueOf(pos + finalI - 1);
-                                positionInt = pos + finalI - 1;
-                            }
-                            if (gameState.fields.get(String.valueOf(position)).field.getChildren().size() > 1 && finalI == 2) {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().remove(1,2);
+                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
+                                if (currentPosition.equals("0")) currentPosition = "40";
+                                nextPosition = pos + finalI - 40;
                             } else {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().clear();
+                                currentPosition = String.valueOf(pos + finalI - 1);
+                                nextPosition = pos + finalI;
+                            }
+                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI == 2) {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
                             }
                             if (finalI == 2) {
-                                this.removeChildrenFromField(String.valueOf(pos + finalI));
-                                gameState.fields.get(String.valueOf(pos + finalI)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(pos + finalI)).figure = figure;
-                                figure.fieldID = String.valueOf(pos + finalI);
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
                                 gameState.newPlayerTurn();
                             } else {
-                                gameState.fields.get(String.valueOf(positionInt + 1)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                             }
                         });
                         timeline.getKeyFrames().add(keyFrame);
@@ -478,45 +608,77 @@ public class PlayerState {
             }
         }
         if (rolled.equals("three.png")) {
-            if (figure.fieldID.startsWith("h")) {
-                gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                gameState.fields.get(getFirstFieldBasedOnColor(figure.figureID)).field.getChildren().add(figure.figure);
-                gameState.fields.get(getFirstFieldBasedOnColor(figure.figureID)).color = this.color;
-            } else if (!figure.fieldID.contains("d")) {
+            if (!figure.fieldID.contains("d")) {
                 gameState.fields.get(figure.fieldID).figure = null;
                 int pos = Integer.parseInt(figure.fieldID);
                 if (pos <= this.max && pos + 3 > this.max) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                    gameState.fields.get("d" + String.valueOf(pos + 3 - this.max)).field.getChildren().add(figure.figure);
-                    gameState.fields.get("d" + String.valueOf(pos + 3 - this.max)).color = this.color;
+                    final String destinationField = this.calculateDestinationPoistion(pos, 3);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 4; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
+                            }
+                            if (finalI == 3) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
                 } else {
                     Timeline timeline = new Timeline();
                     for (int i = 1; i < 4; i++) {
                         Duration duration = Duration.millis(500 * i);
                         int finalI = i;
                         KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String position = "";
-                            int positionInt = 0;
+                            String currentPosition = "";
+                            int nextPosition = 0;
                             if (pos + finalI > 40) {
-                                position = String.valueOf(pos + finalI - 40);
-                                positionInt = pos + finalI - 40;
-                            }   else {
-                                position = String.valueOf(pos + finalI - 1);
-                                positionInt = pos + finalI - 1;
-                            }
-                            if (gameState.fields.get(String.valueOf(position)).field.getChildren().size() > 1 && finalI > 1) {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().remove(1,2);
+                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
+                                if (currentPosition.equals("0")) currentPosition = "40";
+                                nextPosition = pos + finalI - 40;
                             } else {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().clear();
+                                    currentPosition = String.valueOf(pos + finalI - 1);
+                                    nextPosition = pos + finalI;
+                            }
+                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
                             }
                             if (finalI == 3) {
-                                this.removeChildrenFromField(String.valueOf(pos + finalI));
-                                gameState.fields.get(String.valueOf(pos + finalI)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(pos + finalI)).figure = figure;
-                                figure.fieldID = String.valueOf(pos + finalI);
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
                                 gameState.newPlayerTurn();
                             } else {
-                                gameState.fields.get(String.valueOf(positionInt + 1)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                             }
                         });
                         timeline.getKeyFrames().add(keyFrame);
@@ -527,12 +689,47 @@ public class PlayerState {
         }
         if (rolled.equals("four.png")) {
             if (!figure.fieldID.contains("d")) {
-                this.removeChildrenFromField(String.valueOf(Integer.parseInt(figure.fieldID)));
+                gameState.fields.get(figure.fieldID).figure = null;
                 int pos = Integer.parseInt(figure.fieldID);
                 if (pos <= this.max && pos + 4 > this.max) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                    gameState.fields.get("d" + String.valueOf(pos + 4 - this.max)).field.getChildren().add(figure.figure);
-                    gameState.fields.get("d" + String.valueOf(pos + 4 - this.max)).color = this.color;
+                    final String destinationField = this.calculateDestinationPoistion(pos, 4);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 5; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().clear();
+                            }
+                            if (finalI == 4) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
                 } else {
                     gameState.fields.get(figure.fieldID).figure = null;
                     Timeline timeline = new Timeline();
@@ -540,28 +737,26 @@ public class PlayerState {
                         Duration duration = Duration.millis(500 * i);
                         int finalI = i;
                         KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String position = "";
-                            int positionInt = 0;
+                            String currentPosition = "";
+                            int nextPosition = 0;
                             if (pos + finalI > 40) {
-                                position = String.valueOf(pos + finalI - 40);
-                                positionInt = pos + finalI - 40;
-                            }   else {
-                                position = String.valueOf(pos + finalI - 1);
-                                positionInt = pos + finalI - 1;
-                            }
-                            if (gameState.fields.get(String.valueOf(position)).field.getChildren().size() > 1 && finalI > 1) {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().remove(1,2);
+                                nextPosition = pos + finalI - 40;
                             } else {
-                                gameState.fields.get(String.valueOf(position)).field.getChildren().clear();
+                                nextPosition = pos + finalI;
+                            }
+                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
                             }
                             if (finalI == 4) {
-                                this.removeChildrenFromField(String.valueOf(pos + finalI));
-                                gameState.fields.get(String.valueOf(pos + finalI)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(pos + finalI)).figure = figure;
-                                figure.fieldID = String.valueOf(pos + finalI);
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
                                 gameState.newPlayerTurn();
                             } else {
-                                gameState.fields.get(String.valueOf(positionInt + 1)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                             }
                         });
                         timeline.getKeyFrames().add(keyFrame);
@@ -569,6 +764,99 @@ public class PlayerState {
                     timeline.play();
                 }
             }
+        }
+        if (rolled.equals("five.png")) {
+            if (!figure.fieldID.contains("d")) {
+                gameState.fields.get(figure.fieldID).figure = null;
+                int pos = Integer.parseInt(figure.fieldID);
+                if (pos <= this.max && pos + 5 > this.max) {
+                    final String destinationField = this.calculateDestinationPoistion(pos, 5);
+                    gameState.gotHome(figure.getColor());
+                    this.removeChildrenFromField(String.valueOf(pos));
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 6; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String nextPosition = "";
+                            int housePosition = 1;
+                            if (pos + finalI > this.max) {
+                                if (figure.fieldID.contains("d")) {
+                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
+                                } else {
+                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                                }
+                            } else {
+                                nextPosition = String.valueOf(pos + finalI - 1);
+                            }
+                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
+                            }
+                            if (finalI == 5) {
+//                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
+                } else {
+                    Timeline timeline = new Timeline();
+                    for (int i = 1; i < 6; i++) {
+                        Duration duration = Duration.millis(500 * i);
+                        int finalI = i;
+                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                            String currentPosition = "";
+                            int nextPosition = 0;
+                            if (pos + finalI > 40) {
+                                nextPosition = pos + finalI - 40;
+                            } else {
+                                nextPosition = pos + finalI;
+                            }
+                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
+                            }
+                            if (finalI == 5) {
+                                this.removeChildrenFromField(String.valueOf(nextPosition));
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                                figure.fieldID = String.valueOf(nextPosition);
+                                gameState.newPlayerTurn();
+                            } else {
+                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                            }
+                        });
+                        timeline.getKeyFrames().add(keyFrame);
+                    }
+                    timeline.play();
+                }
+            }
+        }
+    }
+
+    private String calculateDestinationPoistion(final int position, final int rolled) {
+        int left = (position + rolled) - max;
+        System.out.println("POSITION:" + position);
+        System.out.println("ROLLED:" + rolled);
+        System.out.println("MAX:" + max);
+        System.out.println("LEFT:" + left);
+        if (left > 4) {
+            return "cant";
+        } else {
+            if (gameState.fields.get("d" + getFieldIDBasedOnColor(this.color) + String.valueOf(left)).figure != null) {
+                return "cant";
+            }
+            return "d" + getFieldIDBasedOnColor(this.color) + String.valueOf(left);
         }
     }
 
@@ -625,6 +913,19 @@ public class PlayerState {
             return "r";
         } else if (color == 4) {
             return "g";
+        }
+        return null;
+    }
+
+    private String getColorAsString() {
+        if (this.color == 1) {
+            return "blue";
+        } else if (this.color == 2) {
+            return "yellow";
+        } else if (this.color == 3) {
+            return "red";
+        } else if (this.color == 4) {
+            return "green";
         }
         return null;
     }
