@@ -99,6 +99,10 @@ public class LudoGameState {
         this.start();
     }
 
+    public void samePlayerTurn() {
+        this.start();
+    }
+
     public void start() {
         if (this.turn == 1) {
             this.players.get("1").state.createDiceRoller();

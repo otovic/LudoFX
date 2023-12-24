@@ -167,7 +167,7 @@ public class PlayerState {
                 Timeline timeline = new Timeline();
                 Timeline timeline1 = new Timeline();
                 for (int i = 1; i < 8; i++) {
-                    Duration duration = Duration.millis(200 * i);
+                    Duration duration = Duration.millis(100 * i);
                     int finalI = i;
                     KeyFrame keyFrame = new KeyFrame(duration, event1 -> {
                         this.diceRoller.getChildren().remove(0);
@@ -235,8 +235,7 @@ public class PlayerState {
                 }
     }
 
-    public void showPossibleMoves(final String rlled) {
-        String rolled = "six.png";
+    public void showPossibleMoves(final String rolled) {
         boolean canMove = false;
         for (Figure figure : this.playerFigures) {
             if (rolled.equals("six.png")) {
@@ -356,490 +355,127 @@ public class PlayerState {
         }
     }
 
+    private void moveFigureFromHome(final Figure figure) {
+        gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
+        gameState.fields.get(figure.fieldID).figure = null;
+        String firstField = getFirstFieldBasedOnColor(figure.figureID);
+        this.removeChildrenFromField(firstField);
+        gameState.fields.get(firstField).field.getChildren().add(figure.figure);
+        gameState.fields.get(firstField).figure = figure;
+        figure.fieldID = firstField;
+        gameState.samePlayerTurn();
+    }
+
+    private void moveFigureToHome(final int rolled, final Figure figure) {
+        int pos = Integer.parseInt(figure.fieldID);
+        final String destinationField = this.calculateDestinationPoistion(pos, rolled);
+        gameState.gotHome(figure.getColor());
+        Timeline timeline = new Timeline();
+        for (int i = 1; i < rolled + 1; i++) {
+            Duration duration = Duration.millis(500 * i);
+            int finalI = i;
+            KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                String nextPosition = "";
+                int housePosition = 1;
+                if (pos + finalI > this.max) {
+                    if (figure.fieldID.contains("d")) {
+                        housePosition = Integer.parseInt(figure.fieldID.split("")[2]);
+                        nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + (housePosition + 1));
+                    } else {
+                        nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
+                    }
+                } else {
+                    nextPosition = String.valueOf(pos + finalI);
+                }
+                if (finalI == 1) {
+                    gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                    gameState.fields.get(figure.fieldID).figure = null;
+                } else if (gameState.fields.get(figure.fieldID).figure != null) {
+                    gameState.fields.get(figure.fieldID).field.getChildren().remove(1,2);
+                } else {
+                    gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                }
+                if (finalI == rolled) {
+                    this.removeChildrenFromField(String.valueOf(nextPosition));
+                    gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                    gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                    figure.fieldID = String.valueOf(nextPosition);
+                    if (rolled == 6) {
+                        gameState.samePlayerTurn();
+                    } else {
+                        gameState.newPlayerTurn();
+                    }
+                } else {
+                    figure.fieldID = nextPosition;
+                    gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                }
+            });
+            timeline.getKeyFrames().add(keyFrame);
+        }
+        timeline.play();
+    }
+
+    private void moveFigureRegular(final int rolled, final Figure figure) {
+        gameState.fields.get(figure.fieldID).figure = null;
+        int pos = Integer.parseInt(figure.fieldID);
+        if (pos <= this.max && pos + rolled > this.max) {
+            this.moveFigureToHome(rolled, figure);
+        } else {
+            Timeline timeline = new Timeline();
+            for (int i = 1; i < rolled + 1; i++) {
+                Duration duration = Duration.millis(200 * i);
+                int finalI = i;
+                KeyFrame keyFrame = new KeyFrame(duration, event -> {
+                    int nextPosition = 0;
+                    if (pos + finalI > 40) {
+                        nextPosition = pos + finalI - 40;
+                    } else {
+                        nextPosition = pos + finalI;
+                    }
+                    if (finalI == 1) {
+                        gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                        gameState.fields.get(figure.fieldID).figure = null;
+                    } else if (gameState.fields.get(figure.fieldID).figure != null) {
+                        gameState.fields.get(figure.fieldID).field.getChildren().remove(1,2);
+                    } else {
+                        gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                    }
+                    if (finalI == rolled) {
+                        this.removeChildrenFromField(String.valueOf(nextPosition));
+                        gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                        gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                        figure.fieldID = String.valueOf(nextPosition);
+                        if (rolled == 6) {
+                            gameState.samePlayerTurn();
+                        } else {
+                            gameState.newPlayerTurn();
+                        }
+                    } else {
+                        figure.fieldID = String.valueOf(nextPosition);
+                        gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                    }
+                });
+                timeline.getKeyFrames().add(keyFrame);
+            }
+            timeline.play();
+        }
+    }
+
+    private void rolledSix(final int rolled, final Figure figure) {
+        if (figure.fieldID.startsWith("h")) {
+            this.moveFigureFromHome(figure);
+        } else if (!figure.fieldID.contains("d")) {
+            this.moveFigureRegular(rolled, figure);
+        }
+    }
+
     public void moveFigure(final String rolled, final Figure figure) {
-        if (rolled.equals("six.png")) {
-            if (figure.fieldID.startsWith("h")) {
-                gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-                gameState.fields.get(figure.fieldID).figure = null;
-                String firstField = getFirstFieldBasedOnColor(figure.figureID);
-                this.removeChildrenFromField(firstField);
-                gameState.fields.get(firstField).field.getChildren().add(figure.figure);
-                gameState.fields.get(firstField).figure = figure;
-                figure.fieldID = firstField;
-                gameState.newPlayerTurn();
-            } else if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 6 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 6);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 7; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().size() > 1 && finalI > 1) {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().clear();
-                            }
-                            if (finalI == 6) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 7; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
-                                if (currentPosition.equals("0")) currentPosition = "40";
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                if (finalI == 1) {
-                                    currentPosition = String.valueOf(pos);
-                                    nextPosition = pos + 1;
-                                } else {
-                                    currentPosition = String.valueOf(pos + finalI - 1);
-                                    nextPosition = pos + finalI;
-                                }
-                            }
-                            if (gameState.fields.get(String.valueOf(currentPosition)).field.getChildren().size() > 1 && finalI != 6) {
-                                gameState.fields.get(String.valueOf(currentPosition)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(currentPosition)).field.getChildren().clear();
-                            }
-                            if (finalI == 6) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
-            }
-        }
-        if (rolled.equals("one.png")) {
+        int rolledInt = this.getRolledInt(rolled);
+        if (rolledInt == 6) {
+            this.rolledSix(rolledInt, figure);
+        } else {
             if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 1 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 1);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 2; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (finalI == 1) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    gameState.fields.get(figure.fieldID).figure = null;
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 2; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
-                                if (currentPosition.equals("0")) currentPosition = "40";
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                if (finalI == 1) {
-                                    currentPosition = String.valueOf(pos);
-                                    nextPosition = pos + 1;
-                                } else {
-                                    currentPosition = String.valueOf(pos + finalI - 1);
-                                    nextPosition = pos + finalI;
-                                }
-                            }
-                            if (finalI == 1) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
-            }
-        }
-        if (rolled.equals("two.png")) {
-            if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 2 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 2);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 3; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI == 2) {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 2) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 3; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
-                                if (currentPosition.equals("0")) currentPosition = "40";
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                currentPosition = String.valueOf(pos + finalI - 1);
-                                nextPosition = pos + finalI;
-                            }
-                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI == 2) {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 2) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
-            }
-        }
-        if (rolled.equals("three.png")) {
-            if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 3 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 3);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 4; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 3) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 4; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                currentPosition = String.valueOf(pos + finalI - 40 - 1);
-                                if (currentPosition.equals("0")) currentPosition = "40";
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                    currentPosition = String.valueOf(pos + finalI - 1);
-                                    nextPosition = pos + finalI;
-                            }
-                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 3) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
-            }
-        }
-        if (rolled.equals("four.png")) {
-            if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 4 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 4);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 5; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().clear();
-                            }
-                            if (finalI == 4) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    gameState.fields.get(figure.fieldID).figure = null;
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 5; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                nextPosition = pos + finalI;
-                            }
-                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 4) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
-            }
-        }
-        if (rolled.equals("five.png")) {
-            if (!figure.fieldID.contains("d")) {
-                gameState.fields.get(figure.fieldID).figure = null;
-                int pos = Integer.parseInt(figure.fieldID);
-                if (pos <= this.max && pos + 5 > this.max) {
-                    final String destinationField = this.calculateDestinationPoistion(pos, 5);
-                    gameState.gotHome(figure.getColor());
-                    this.removeChildrenFromField(String.valueOf(pos));
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 6; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String nextPosition = "";
-                            int housePosition = 1;
-                            if (pos + finalI > this.max) {
-                                if (figure.fieldID.contains("d")) {
-                                    housePosition = Integer.parseInt(figure.fieldID.split("")[1]);
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + housePosition);
-                                } else {
-                                    nextPosition = String.valueOf("d" + this.getFieldIDBasedOnColor(this.color) + "1");
-                                }
-                            } else {
-                                nextPosition = String.valueOf(pos + finalI - 1);
-                            }
-                            if (gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(Integer.valueOf(nextPosition) - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 5) {
-//                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                } else {
-                    Timeline timeline = new Timeline();
-                    for (int i = 1; i < 6; i++) {
-                        Duration duration = Duration.millis(500 * i);
-                        int finalI = i;
-                        KeyFrame keyFrame = new KeyFrame(duration, event -> {
-                            String currentPosition = "";
-                            int nextPosition = 0;
-                            if (pos + finalI > 40) {
-                                nextPosition = pos + finalI - 40;
-                            } else {
-                                nextPosition = pos + finalI;
-                            }
-                            if (gameState.fields.get(String.valueOf(nextPosition - 1)).figure != null && finalI > 1) {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().remove(1,2);
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition - 1)).field.getChildren().clear();
-                            }
-                            if (finalI == 5) {
-                                this.removeChildrenFromField(String.valueOf(nextPosition));
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                                gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
-                                figure.fieldID = String.valueOf(nextPosition);
-                                gameState.newPlayerTurn();
-                            } else {
-                                gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                            }
-                        });
-                        timeline.getKeyFrames().add(keyFrame);
-                    }
-                    timeline.play();
-                }
+                this.moveFigureRegular(rolledInt, figure);
             }
         }
     }
