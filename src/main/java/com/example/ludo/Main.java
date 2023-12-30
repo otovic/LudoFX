@@ -1,22 +1,25 @@
 package com.example.ludo;
 
+import com.example.ludo.utility.ScreenController;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class HelloApplication extends Application {
+public class Main extends Application {
+    public ScreenController screenController = new ScreenController();
+    public GameMode gameMode;
     @Override
     public void start(Stage stage) throws IOException {
-        GameMode gameMode = new GameMode("test", "test", new LudoGameState());
+        screenController.setStage(stage);
+        screenController.init();
+    }
+
+    public void initGame() {
+        this.gameMode = new GameMode("test", "test", new LudoGameState());
 
         BorderPane v = new BorderPane();
         v.setPrefHeight(780);
@@ -50,7 +53,7 @@ public class HelloApplication extends Application {
         HBox boardContainer = new HBox();
         boardContainer.setStyle("-fx-background-color: red; -fx-border-style: solid solid solid solid; -fx-border-color: green black black red;");
 
-        boardContainer.getChildren().addAll(createBoard(gameMode));
+        boardContainer.getChildren().addAll(createBoard(this.gameMode));
 
         VBox chatContainer = new VBox();
         chatContainer.setPrefHeight(540);
@@ -93,12 +96,10 @@ public class HelloApplication extends Application {
         v.setBottom(butum);
 
         Scene scene = new Scene(v, 1300, 780);
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
+//        stage.setTitle("Hello!");
+//        stage.setScene(scene);
+//        stage.show();
 
-//        gameMode.printState();
-//        gameMode.moveFigure();
         gameMode.state.addPlayer("1", "petar", 1);
         gameMode.state.players.get("1").state.setPlayerBox(player1);
         gameMode.state.addPlayer("2", "svetozar", 2);
@@ -109,6 +110,10 @@ public class HelloApplication extends Application {
         gameMode.state.players.get("4").state.setPlayerBox(player4);
 
         gameMode.start();
+    }
+
+    public void initGameMode() {
+
     }
 
     public static VBox createBoard(final GameMode gameMode) {
