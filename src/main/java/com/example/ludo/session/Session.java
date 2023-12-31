@@ -7,18 +7,17 @@ import com.example.ludo.utility.Listener;
 import com.example.ludo.utility.ScreenController;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
 public class Session {
     public ScreenController screenController = new ScreenController();
+    public PrintWriter outputStream;
     public List<Listener> listeners = new ArrayList<>();
     public Player player;
 
@@ -47,20 +46,33 @@ public class Session {
         }
     }
 
+    public String getServer() {
+        if (this.serverAddress == null || this.serverPort == 0) {
+            return null;
+        }
+        return this.serverAddress + ":" + this.serverPort;
+    }
+
     public void setControlledPlayer(final Player player) {
         this.player = player;
     }
 
-    public void establishConnection(final EventResponse data, final String route, final OnError onError) {
-        try (Socket socket = new Socket(this.serverAddress, this.serverPort)) {
+    public void executeEvent(final EventResponse event) {
+        this.outputStream.println(new Gson().toJson(event));
+        this.outputStream.flush();
+    }
 
+    public void establishConnection(final EventResponse data, final String route, final OnError onError) {
+        try {
+            Socket socket = new Socket(this.serverAddress, this.serverPort);
             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter echo = new PrintWriter(socket.getOutputStream(), true);
+            this.outputStream = echo;
             Scanner scanner = new Scanner(System.in);
 
             String body = new Gson().toJson(data);
             String request = "POST /" + route + " HTTP/1.1\r\n" +
-                    "Host: localhost\r\n" +
+                    "Host: " + this.serverAddress + " \r\n" +
                     "Content-Type: application/json\r\n" +
                     "Content-Length: " + body.length() + "\r\n" +
                     "Connection: keep-alive\r\n\r\n" +
@@ -69,11 +81,9 @@ public class Session {
 
             String line;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                if (line.isEmpty()) {
+                if (line.equals("")) {
                     break;
                 }
-
                 this.notifyListeners(line);
             }
         } catch (UnknownHostException e) {
@@ -90,5 +100,10 @@ public class Session {
             listener.setData(data);
             listener.runNotify();
         }
+    }
+
+    public void logout() {
+        this.executeEvent(new EventResponse("logout", new HashMap<>(), new HashMap<>()));
+        this.player = null;
     }
 }

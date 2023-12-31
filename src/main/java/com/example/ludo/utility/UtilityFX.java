@@ -8,7 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 public class UtilityFX {
-    public static VBox createInputSet(final String text, final ParametrizedCallback callback, final boolean isPassword, final String placeholder) {
+    public static VBox createInputSet(final String text, final ParametrizedCallback callback, final boolean isPassword, final String placeholder, final String fieldValue) {
         VBox inputSet = new VBox();
         inputSet.setMaxWidth(250);
         inputSet.setPrefHeight(50);
@@ -26,6 +26,10 @@ public class UtilityFX {
                     callback.run(input.getText());
                 }
             });
+
+            if (fieldValue != null) {
+                input.setText(fieldValue);
+            }
 
             inputSet.getChildren().addAll(lblText, input);
             return inputSet;

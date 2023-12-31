@@ -40,8 +40,7 @@ public class RegisterScreen {
         back.setPrefHeight(30);
         back.setPrefWidth(250);
         back.setOnMouseClicked(e -> {
-//            StartingScreen startingScreen = new StartingScreen(session);
-//            startingScreen.initStartingScreen(screen);
+            StartingScreen.initStartingScreen(session);
         });
 
         register.setOnMouseClicked(e -> {
@@ -78,16 +77,18 @@ public class RegisterScreen {
 
                 Listener listener = new Listener("registerScreen", (res) -> {
                     Platform.runLater(() -> {
-                        if (!res.equals("")) {
-                            Player player = new Player(res, username[0], email[0]);
-                            session.setControlledPlayer(player);
-                            session.removeListener("registerScreen");
-//                            MainMenuScreen.initMainMenuScreen(screen);
-                        } else {
+                        EventResponse response = new Gson().fromJson(res, EventResponse.class);
+                        if (response.eventData.get("error") != null) {
+                            String errorMessage = response.eventData.get("error");
                             error.setVisible(true);
                             error.setStyle("-fx-text-fill: red;");
-                            error.setText("Invalid credentials");
+                            error.setText(Utility.getErrorMessage(errorMessage));
                             session.removeListener("registerScreen");
+                        } else {
+                            Player player = new Player(response.eventData.get("key"), username[0], email[0]);
+                            session.setControlledPlayer(player);
+                            session.removeListener("registerScreen");
+                            MainMenuScreen.initMainMenuScreen(session);
                         }
                     });
                 });
@@ -108,13 +109,13 @@ public class RegisterScreen {
 
         container.getChildren().addAll(UtilityFX.createInputSet("Username", (value) -> {
             username[0] = value;
-        }, false, "username"), UtilityFX.createInputSet("Email", (value) -> {
+        }, false, "username", null), UtilityFX.createInputSet("Email", (value) -> {
             email[0] = value;
-        }, false, "email"), UtilityFX.createInputSet("Password", (value) -> {
+        }, false, "email", null), UtilityFX.createInputSet("Password", (value) -> {
             password[0] = value;
-        }, true, "password"), UtilityFX.createInputSet("Confirm Password", (value) -> {
+        }, true, "password", null), UtilityFX.createInputSet("Confirm Password", (value) -> {
             confirmPassword[0] = value;
-        }, true, "password"), register, error, back);
+        }, true, "password", null), register, error, back);
 
         session.screenController.init(new Scene(container, 300, 400), "Ludo");
     }
