@@ -1,7 +1,10 @@
 package com.example.ludo.session;
 
+import com.example.ludo.Player;
+import com.example.ludo.models.OnError;
 import com.example.ludo.utility.EventResponse;
 import com.example.ludo.utility.Listener;
+import com.example.ludo.utility.ScreenController;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -15,20 +18,48 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Session {
+    public ScreenController screenController = new ScreenController();
     public List<Listener> listeners = new ArrayList<>();
+    public Player player;
+
+    private String serverAddress;
+    private int serverPort;
 
     public void addListener(Listener listener) {
         listeners.add(listener);
     }
-    public void establishConnection(final EventResponse data) {
-        try (Socket socket = new Socket("localhost", 8082)) {
+
+    public void removeListener(final String id) {
+        listeners.removeIf(listener -> listener.id.equals(id));
+    }
+
+    public boolean setServer(final String server) {
+        try {
+            final String[] serverData = server.split(":");
+            this.serverAddress = serverData[0];
+            this.serverPort = Integer.parseInt(serverData[1]);
+            System.out.println(this.serverAddress);
+            System.out.println(this.serverPort);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public void setControlledPlayer(final Player player) {
+        this.player = player;
+    }
+
+    public void establishConnection(final EventResponse data, final String route, final OnError onError) {
+        try (Socket socket = new Socket(this.serverAddress, this.serverPort)) {
 
             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter echo = new PrintWriter(socket.getOutputStream(), true);
             Scanner scanner = new Scanner(System.in);
 
             String body = new Gson().toJson(data);
-            String request = "POST /connect HTTP/1.1\r\n" +
+            String request = "POST /" + route + " HTTP/1.1\r\n" +
                     "Host: localhost\r\n" +
                     "Content-Type: application/json\r\n" +
                     "Content-Length: " + body.length() + "\r\n" +
@@ -46,9 +77,11 @@ public class Session {
                 this.notifyListeners(line);
             }
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            System.out.println("Server not found: " + e.getMessage());
+            onError.call("Server not found!");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("I/O error: " + e.getMessage());
+            onError.call("Server not found!");
         }
     }
 

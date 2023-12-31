@@ -1,5 +1,7 @@
 package com.example.ludo;
 
+import com.example.ludo.screens.StartingScreen;
+import com.example.ludo.session.Session;
 import com.example.ludo.utility.ScreenController;
 import javafx.application.Application;
 import javafx.geometry.Pos;
@@ -10,12 +12,12 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class Main extends Application {
-    public ScreenController screenController = new ScreenController();
+    public Session session = new Session();
     public GameMode gameMode;
     @Override
     public void start(Stage stage) throws IOException {
-        screenController.setStage(stage);
-        screenController.init();
+        this.session.screenController.setStage(stage);
+        StartingScreen.initStartingScreen(this.session);
     }
 
     public void initGame() {
@@ -101,13 +103,13 @@ public class Main extends Application {
 //        stage.show();
 
         gameMode.state.addPlayer("1", "petar", 1);
-        gameMode.state.players.get("1").state.setPlayerBox(player1);
+        gameMode.state.players.get("1").setPlayerBox(player1);
         gameMode.state.addPlayer("2", "svetozar", 2);
-        gameMode.state.players.get("2").state.setPlayerBox(player2);
+        gameMode.state.players.get("2").setPlayerBox(player2);
         gameMode.state.addPlayer("3", "tadzudin", 3);
-        gameMode.state.players.get("3").state.setPlayerBox(player3);
+        gameMode.state.players.get("3").setPlayerBox(player3);
         gameMode.state.addPlayer("4", "dimitar", 4);
-        gameMode.state.players.get("4").state.setPlayerBox(player4);
+        gameMode.state.players.get("4").setPlayerBox(player4);
 
         gameMode.start();
     }

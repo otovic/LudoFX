@@ -23,7 +23,7 @@ public class LudoGameState {
     }
 
     public void addPlayer(final String id, final String username, final int color) {
-        this.players.put(id, new Player(id, new PlayerState(username, this.createFigures(), color, this)));
+        this.players.put(id, new Player(this.createFigures(), color, this));
         this.spawnPlayer(id, color);
         this.playersAdded++;
     }
@@ -34,7 +34,7 @@ public class LudoGameState {
 
     public void spawnPlayer(final String id, final int color) {
         String prefix = this.getPrefix();
-        for (Figure figure : this.players.get(id).state.playerFigures) {
+        for (Figure figure : this.players.get(id).playerFigures) {
             Field f = this.fields.get(figure.fieldID);
             f.field.getChildren().add(figure.generateFigure());
             f.figure = figure;
@@ -105,28 +105,28 @@ public class LudoGameState {
 
     public void start() {
         if (this.turn == 1) {
-            this.players.get("1").state.createDiceRoller();
-            this.players.get("2").state.createHouse();
-            this.players.get("3").state.createHouse();
-            this.players.get("4").state.createHouse();
+            this.players.get("1").createDiceRoller();
+            this.players.get("2").createHouse();
+            this.players.get("3").createHouse();
+            this.players.get("4").createHouse();
         }
         if (this.turn == 2) {
-            this.players.get("2").state.createDiceRoller();
-            this.players.get("1").state.createHouse();
-            this.players.get("3").state.createHouse();
-            this.players.get("4").state.createHouse();
+            this.players.get("2").createDiceRoller();
+            this.players.get("1").createHouse();
+            this.players.get("3").createHouse();
+            this.players.get("4").createHouse();
         }
         if (this.turn == 3) {
-            this.players.get("3").state.createDiceRoller();
-            this.players.get("1").state.createHouse();
-            this.players.get("2").state.createHouse();
-            this.players.get("4").state.createHouse();
+            this.players.get("3").createDiceRoller();
+            this.players.get("1").createHouse();
+            this.players.get("2").createHouse();
+            this.players.get("4").createHouse();
         }
         if (this.turn == 4) {
-            this.players.get("4").state.createDiceRoller();
-            this.players.get("1").state.createHouse();
-            this.players.get("2").state.createHouse();
-            this.players.get("3").state.createHouse();
+            this.players.get("4").createDiceRoller();
+            this.players.get("1").createHouse();
+            this.players.get("2").createHouse();
+            this.players.get("3").createHouse();
         }
     }
 }
