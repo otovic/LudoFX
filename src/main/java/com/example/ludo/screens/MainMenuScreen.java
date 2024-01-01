@@ -54,6 +54,29 @@ public class MainMenuScreen {
         Button join = new Button("Join Game");
         join.setPrefHeight(30);
         join.setPrefWidth(250);
+        join.setOnMouseClicked(e -> {
+//            session.setTask(() -> {
+//                EventResponse response = new EventResponse("getLobbies", new HashMap<>() {{}}, new HashMap<>() {{}});
+//
+//                Listener listener = new Listener("mainmenu", (eventResponse) -> {
+//                    Platform.runLater(() -> {
+//                        EventResponse serverResponse = new Gson().fromJson(eventResponse, EventResponse.class);
+//                        if (serverResponse.eventData.get("error") != null) {
+//                            session.removeListener("mainmenu");
+//                            System.out.println("error");
+//                            return;
+//                        }
+//
+//                        session.removeListener("mainmenu");
+//                        JoinLobbyScreen.init(session);
+//                    });
+//                });
+//
+//                session.addListener(listener);
+//                session.executeEvent(response);
+//            });
+            JoinLobbyScreen.init(session);
+        });
 
         Button logout = new Button("Logout");
         logout.setPrefHeight(30);
