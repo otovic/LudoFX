@@ -1,5 +1,6 @@
 package com.example.ludo;
 
+import com.example.ludo.screens.JoinLobbyScreen;
 import com.example.ludo.screens.LobbyScreen;
 import com.example.ludo.screens.StartingScreen;
 import com.example.ludo.session.Session;
@@ -20,6 +21,7 @@ public class Main extends Application {
         this.session.screenController.setStage(stage);
 //        LobbyScreen.init(this.session);
         StartingScreen.initStartingScreen(this.session);
+//        JoinLobbyScreen.init(this.session);
     }
 
     public void initGame() {
