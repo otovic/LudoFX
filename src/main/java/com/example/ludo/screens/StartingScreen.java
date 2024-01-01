@@ -32,25 +32,27 @@ public class StartingScreen {
         logIn.setPrefHeight(30);
         logIn.setPrefWidth(250);
         logIn.setOnMouseClicked(e -> {
-            if (server[0] == null) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Please fill the server field");
-                return;
-            }
+            if (session.getServer() == null) {
+                if (server[0] == null) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Please fill the server field");
+                    return;
+                }
 
-            if (server[0].equals("")) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Please fill the server field");
-                return;
-            }
+                if (server[0].equals("")) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Please fill the server field");
+                    return;
+                }
 
-            if (!serverSet[0]) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Invalid server address");
-                return;
+                if (!serverSet[0]) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Invalid server address");
+                    return;
+                }
             }
 
             LogInScreen.initLoginScreen(session);
@@ -60,25 +62,27 @@ public class StartingScreen {
         register.setPrefHeight(30);
         register.setPrefWidth(250);
         register.setOnMouseClicked(e -> {
-            if (server[0] == null) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Please fill the server field");
-                return;
-            }
+            if (session.getServer() == null) {
+                if (server[0] == null) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Please fill the server field");
+                    return;
+                }
 
-            if (server[0].equals("")) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Please fill the server field");
-                return;
-            }
+                if (server[0].equals("")) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Please fill the server field");
+                    return;
+                }
 
-            if (!serverSet[0]) {
-                error.setVisible(true);
-                error.setStyle("-fx-text-fill: red;");
-                error.setText("Invalid server address");
-                return;
+                if (!serverSet[0]) {
+                    error.setVisible(true);
+                    error.setStyle("-fx-text-fill: red;");
+                    error.setText("Invalid server address");
+                    return;
+                }
             }
 
             RegisterScreen.initRegisterScreen(session);

@@ -66,7 +66,7 @@ public class RegisterScreen {
                 return;
             }
 
-            Thread t = new Thread(() -> {
+            session.setTask(() -> {
                 EventResponse data = new EventResponse("register", new HashMap<>() {{
                 }}, new HashMap<>() {{
                     put("username", username[0]);
@@ -103,8 +103,6 @@ public class RegisterScreen {
                     });
                 });
             });
-
-            t.start();
         });
 
         container.getChildren().addAll(UtilityFX.createInputSet("Username", (value) -> {

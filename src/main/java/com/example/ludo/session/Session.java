@@ -1,7 +1,9 @@
 package com.example.ludo.session;
 
+import com.example.ludo.GameMode;
 import com.example.ludo.Player;
 import com.example.ludo.models.OnError;
+import com.example.ludo.models.ParametrizedCallback;
 import com.example.ludo.utility.EventResponse;
 import com.example.ludo.utility.Listener;
 import com.example.ludo.utility.ScreenController;
@@ -20,16 +22,25 @@ public class Session {
     public PrintWriter outputStream;
     public List<Listener> listeners = new ArrayList<>();
     public Player player;
-
-    private String serverAddress;
-    private int serverPort;
-
+    private String serverAddress = "localhost";
+    private int serverPort = 8082;
     public void addListener(Listener listener) {
         listeners.add(listener);
     }
-
     public void removeListener(final String id) {
         listeners.removeIf(listener -> listener.id.equals(id));
+    }
+    public GameMode gameMode;
+    public Thread thread = new Thread();
+    public HashMap<String, ParametrizedCallback> events = new HashMap<>();
+
+    public Session() {
+        System.out.println("Session created");
+        this.thread.start();
+    }
+
+    public void setEvent(final String event, final ParametrizedCallback callback) {
+        this.events.put(event, callback);
     }
 
     public boolean setServer(final String server) {
@@ -51,6 +62,19 @@ public class Session {
             return null;
         }
         return this.serverAddress + ":" + this.serverPort;
+    }
+
+    public void setTask(final Runnable task) {
+        this.thread = new Thread(task::run);
+        this.thread.start();
+    }
+
+    public void initLobby(final String lobbyID, final Player player) {
+        this.gameMode = new GameMode(lobbyID, player.key, player);
+    }
+
+    public void cancelLobby() {
+        this.gameMode = null;
     }
 
     public void setControlledPlayer(final Player player) {

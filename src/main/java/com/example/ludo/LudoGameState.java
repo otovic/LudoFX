@@ -23,7 +23,7 @@ public class LudoGameState {
     }
 
     public void addPlayer(final String id, final String username, final int color) {
-        this.players.put(id, new Player(this.createFigures(), color, this));
+//        this.players.put(id, new Player(this.createFigures(), color, this));
         this.spawnPlayer(id, color);
         this.playersAdded++;
     }

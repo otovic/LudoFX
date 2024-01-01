@@ -41,7 +41,7 @@ public class LogInScreen {
                 return;
             }
 
-            Thread t = new Thread(() -> {
+            session.setTask(() -> {
                 EventResponse response = new EventResponse("login", new HashMap<>() {{
 
                 }}, new HashMap<>() {{
@@ -77,8 +77,6 @@ public class LogInScreen {
                     });
                 });
             });
-
-            t.start();
         });
 
         Button back = new Button("Back");

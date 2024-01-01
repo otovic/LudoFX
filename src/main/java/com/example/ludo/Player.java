@@ -22,11 +22,10 @@ public class Player {
     public int color;
     public List<Figure> playerFigures;
     public VBox playerBox;
-
     private VBox diceRoller;
-
-    private LudoGameState gameState;
+    private GameMode gameState;
     private int max = 0;
+    public boolean isReady = false;
 
     public Player(final String key, final String username, final String email) {
         this.key = key;
@@ -38,7 +37,7 @@ public class Player {
         this.key = key;
     }
 
-    public Player(List<Figure> playerFigures, int color, LudoGameState gameState) {
+    public Player(List<Figure> playerFigures, int color, GameMode gameState) {
         this.playerFigures = playerFigures;
         this.color = color;
         this.gameState = gameState;

@@ -1,5 +1,6 @@
 package com.example.ludo;
 
+import com.example.ludo.screens.LobbyScreen;
 import com.example.ludo.screens.StartingScreen;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.ScreenController;
@@ -17,6 +18,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         this.session.screenController.setStage(stage);
+//        LobbyScreen.init(this.session);
         StartingScreen.initStartingScreen(this.session);
     }
 
