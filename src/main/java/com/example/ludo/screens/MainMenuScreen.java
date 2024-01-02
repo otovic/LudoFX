@@ -39,9 +39,9 @@ public class MainMenuScreen {
                             System.out.println("error");
                             return;
                         }
-
+                        System.out.println(serverResponse.eventData.get("lobbyID"));
                         session.removeListener("mainmenu");
-                        session.initLobby(serverResponse.eventData.get("lobbyId"), session.player);
+                        session.initLobby(serverResponse.eventData.get("lobbyID"), session.player);
                         LobbyScreen.init(session);
                     });
                 });

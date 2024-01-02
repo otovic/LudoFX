@@ -19,12 +19,10 @@ public class GameMode {
     public HashMap<String, Field> fields = new HashMap<String, Field>();
     public HashMap<String, Player> players = new HashMap<String, Player>();
     public int turn = 1;
-
     public int blueDestinationReached = 0;
     public int yellowDestinationReached = 0;
     public int redDestinationReached = 0;
     public int greenDestinationReached = 0;
-
     public int playersAdded = 0;
     public int playersReady = 0;
 
@@ -54,6 +52,12 @@ public class GameMode {
 
     public void playerReady(final String key) {
         this.playersReady++;
+        this.players.get(key).isReady = true;
+    }
+
+    public void playerUnready(final String key) {
+        this.playersReady--;
+        this.players.get(key).isReady = false;
     }
 
     public boolean arePlayersReady() {

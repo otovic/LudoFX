@@ -33,8 +33,10 @@ public class Player {
         this.email = email;
     }
 
-    public Player(String key) {
+
+    public Player(final String key, final String username) {
         this.key = key;
+        this.username = username;
     }
 
     public Player(List<Figure> playerFigures, int color, GameMode gameState) {
@@ -42,6 +44,10 @@ public class Player {
         this.color = color;
         this.gameState = gameState;
         this.max = this.setMax();
+    }
+
+    public void setReady(final String isReady) {
+        this.isReady = isReady.equals("true");
     }
 
     private int setMax() {

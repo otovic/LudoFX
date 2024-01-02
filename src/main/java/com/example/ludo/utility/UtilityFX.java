@@ -68,7 +68,7 @@ public class UtilityFX {
             msgContainer.setStyle("-fx-background-color: #4CAF50; -fx-border-radius: 5px; -fx-background-radius: 5px");
             message.setAlignment(Pos.CENTER_RIGHT);
         } else {
-            msgContainer.setStyle("-fx-background-color: #f1f1f1; -fx-border-radius: 5px;");
+            msgContainer.setStyle("-fx-background-color: #3399ff; -fx-border-radius: 5px;");
             message.setAlignment(Pos.CENTER_LEFT);
         }
 
