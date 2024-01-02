@@ -39,7 +39,6 @@ public class MainMenuScreen {
                             System.out.println("error");
                             return;
                         }
-                        System.out.println(serverResponse.eventData.get("lobbyID"));
                         session.removeListener("mainmenu");
                         session.initLobby(serverResponse.eventData.get("lobbyID"), session.player);
                         LobbyScreen.init(session);
@@ -55,26 +54,7 @@ public class MainMenuScreen {
         join.setPrefHeight(30);
         join.setPrefWidth(250);
         join.setOnMouseClicked(e -> {
-//            session.setTask(() -> {
-//                EventResponse response = new EventResponse("getLobbies", new HashMap<>() {{}}, new HashMap<>() {{}});
-//
-//                Listener listener = new Listener("mainmenu", (eventResponse) -> {
-//                    Platform.runLater(() -> {
-//                        EventResponse serverResponse = new Gson().fromJson(eventResponse, EventResponse.class);
-//                        if (serverResponse.eventData.get("error") != null) {
-//                            session.removeListener("mainmenu");
-//                            System.out.println("error");
-//                            return;
-//                        }
-//
-//                        session.removeListener("mainmenu");
-//                        JoinLobbyScreen.init(session);
-//                    });
-//                });
-//
-//                session.addListener(listener);
-//                session.executeEvent(response);
-//            });
+            session.removeListener("mainmenu");
             JoinLobbyScreen.init(session);
         });
 

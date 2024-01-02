@@ -34,7 +34,6 @@ public class JoinLobbyScreen {
         lobbies.setMaxWidth(350);
         lobbies.setOnMouseClicked(e -> {
             selectedLobby[0] = lobbies.getSelectionModel().getSelectedItem().split("'")[0];
-            System.out.println(selectedLobby[0]);
         });
 
         Button join = new Button("Join");
@@ -52,6 +51,7 @@ public class JoinLobbyScreen {
         back.setPrefWidth(250);
         back.setOnMouseClicked(e -> {
             session.gameMode = null;
+            session.removeListener("joinlobby");
             MainMenuScreen.initMainMenuScreen(session);
         });
 
@@ -65,12 +65,12 @@ public class JoinLobbyScreen {
                 error.setText("");
                 container.getChildren().remove(error);
                 if (response.eventName.equals("fetchLobbies")) {
-                    System.out.println(response.eventData.size());
                     for (int i = 0; i < response.eventData.size(); i++) {
                         lobbies.getItems().add(response.eventData.get("lobby" + i) + "'s lobby");
                     }
                 }
                 if (response.eventName.equals("syncPlayer")) {
+                    System.out.println("Synced: " + response.eventData.get("username"));
                     Player p = new Player(response.eventData.get("key"), response.eventData.get("username"));
                     p.setReady(response.eventData.get("ready"));
                     session.gameMode.playerJoined(p.key, p);
@@ -78,6 +78,7 @@ public class JoinLobbyScreen {
                 if (response.eventName.equals("joinLobby")) {
                     session.gameMode.key = response.eventData.get("lobbyID");
                     session.gameMode.ownerID = response.eventData.get("ownerID");
+                    session.removeListener("joinlobby");
                     LobbyScreen.init(session);
                 }
                 if (response.eventName.equals("lobbyNotFound")) {

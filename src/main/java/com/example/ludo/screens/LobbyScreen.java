@@ -45,6 +45,7 @@ public class LobbyScreen {
         players.setPrefHeight(300);
         players.setPrefWidth(250);
         session.gameMode.players.forEach((key, player) -> {
+            System.out.println(player.username);
             players.getItems().add(player.username + " | " + (player.isReady ? "Ready" : "Not Ready"));
         });
 
@@ -121,14 +122,19 @@ public class LobbyScreen {
             session.executeEvent(new EventResponse("ready", new HashMap<>() {{
                 put("lobbyID", session.gameMode.key);
             }}, new HashMap<>() {{}}));
-            if (session.gameMode.players.get(session.player.key).isReady) {
-                session.gameMode.playerUnready(session.player.key);
-                players.getItems().remove(session.player.username + " | Ready");
-                players.getItems().add(session.player.username + " | Not Ready");
+            String playerID = session.player.key;
+            if (session.gameMode.players.get(playerID).isReady) {
+                session.gameMode.playerUnready(playerID);
+                String playerUsername = session.gameMode.players.get(playerID).username;
+                int position = players.getItems().indexOf(playerUsername + " | Ready");
+                players.getItems().remove(playerUsername + " | Ready");
+                players.getItems().add(position, playerUsername + " | Not Ready");
             } else {
-                session.gameMode.playerReady(session.player.key);
-                players.getItems().remove(session.player.username + " | Not Ready");
-                players.getItems().add(session.player.username + " | Ready");
+                session.gameMode.playerReady(playerID);
+                String playerUsername = session.gameMode.players.get(playerID).username;
+                int position = players.getItems().indexOf(playerUsername + " | Not Ready");
+                players.getItems().remove(playerUsername + " | Not Ready");
+                players.getItems().add(position, playerUsername + " | Ready");
             }
             checkCanStart(session, buttons, start);
         });
@@ -141,6 +147,7 @@ public class LobbyScreen {
             EventResponse response = new EventResponse("leaveLobby", new HashMap<>() {{}}, new HashMap<>() {{}});
             session.executeEvent(response);
             session.cancelLobby();
+            session.player.isReady = false;
             MainMenuScreen.initMainMenuScreen(session);
         });
 
@@ -152,12 +159,16 @@ public class LobbyScreen {
                 if (response.eventName.equals("lobbyDeleted")) {
                     session.removeListener("lobby");
                     session.cancelLobby();
+                    session.removeListener("lobby");
+                    session.player.isReady = false;
                     MainMenuScreen.initMainMenuScreen(session);
                 }
                 if (response.eventName.equals("playerLeftLobby")) {
+                    String playerUsername = session.gameMode.players.get(response.eventData.get("playerID")).username;
                     session.gameMode.playerLeft(response.eventData.get("playerID"));
-                    players.getItems().remove(response.eventData.get("username") + " | Ready");
-                    players.getItems().remove(response.eventData.get("username") + " | Not Ready");
+                    players.getItems().remove(playerUsername + " | Ready");
+                    players.getItems().remove(playerUsername + " | Not Ready");
+                    checkCanStart(session, buttons, start);
                 }
                 if (response.eventName.equals("playerJoinedLobby")) {
                     Player p = new Player(response.eventData.get("playerID"), response.eventData.get("username"));
@@ -176,7 +187,6 @@ public class LobbyScreen {
                 }
                 if (response.eventName.equals("playerReady")) {
                     String playerID = response.eventData.get("playerID");
-                    System.out.println(playerID);
                     if (session.gameMode.players.get(playerID).isReady) {
                         session.gameMode.playerUnready(playerID);
                         String playerUsername = session.gameMode.players.get(playerID).username;

@@ -120,6 +120,7 @@ public class Session {
     }
 
     public void notifyListeners(final String data) {
+        System.out.println(this.listeners);
         for (Listener listener : listeners) {
             listener.setData(data);
             listener.runNotify();

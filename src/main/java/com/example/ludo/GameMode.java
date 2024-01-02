@@ -51,11 +51,13 @@ public class GameMode {
     }
 
     public void playerReady(final String key) {
+        System.out.println("player ready");
         this.playersReady++;
         this.players.get(key).isReady = true;
     }
 
     public void playerUnready(final String key) {
+        System.out.println("player unready");
         this.playersReady--;
         this.players.get(key).isReady = false;
     }
@@ -65,6 +67,9 @@ public class GameMode {
     }
 
     public void playerLeft(final String key) {
+        if (this.players.get(key).isReady) {
+            this.playersReady--;
+        }
         this.players.remove(key);
     }
 
