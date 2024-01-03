@@ -1,6 +1,6 @@
 package com.example.ludo.screens;
 
-import com.example.ludo.Player;
+import com.example.ludo.game.Player;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.EventResponse;
 import com.example.ludo.utility.Listener;
@@ -109,6 +109,11 @@ public class LobbyScreen {
         Button start = new Button("Start");
         start.setPrefHeight(30);
         start.setPrefWidth(250);
+        start.setOnMouseClicked(e -> {
+            session.executeEvent(new EventResponse("startGame", new HashMap<>() {{
+                put("lobbyID", session.gameMode.key);
+            }}, new HashMap<>() {{}}));
+        });
         if (session.gameMode.ownerID.equals(session.player.key)) {
             buttons.getChildren().add(start);
         }
@@ -201,6 +206,10 @@ public class LobbyScreen {
                         players.getItems().add(position, playerUsername + " | Ready");
                     }
                     checkCanStart(session, buttons, start);
+                }
+                if (response.eventName.equals("startGame")) {
+                    session.removeListener("lobby");
+                    GameScreen.init(session);
                 }
             });
         });

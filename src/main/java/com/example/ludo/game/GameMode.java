@@ -1,11 +1,7 @@
-package com.example.ludo;
+package com.example.ludo.game;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.scene.layout.BorderPane;
+import com.example.ludo.LudoGameState;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;

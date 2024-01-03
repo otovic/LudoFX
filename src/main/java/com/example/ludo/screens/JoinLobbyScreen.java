@@ -1,7 +1,7 @@
 package com.example.ludo.screens;
 
-import com.example.ludo.GameMode;
-import com.example.ludo.Player;
+import com.example.ludo.game.GameMode;
+import com.example.ludo.game.Player;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.EventResponse;
 import com.example.ludo.utility.Listener;
@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 
 import java.util.HashMap;

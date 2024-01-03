@@ -7,4 +7,6 @@ module com.example.ludo {
 
     opens com.example.ludo to javafx.fxml;
     exports com.example.ludo;
+    exports com.example.ludo.game;
+    opens com.example.ludo.game to javafx.fxml;
 }

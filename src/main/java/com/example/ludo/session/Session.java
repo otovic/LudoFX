@@ -1,7 +1,7 @@
 package com.example.ludo.session;
 
-import com.example.ludo.GameMode;
-import com.example.ludo.Player;
+import com.example.ludo.game.GameMode;
+import com.example.ludo.game.Player;
 import com.example.ludo.models.OnError;
 import com.example.ludo.models.ParametrizedCallback;
 import com.example.ludo.utility.EventResponse;

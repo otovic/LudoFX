@@ -1,5 +1,7 @@
 package com.example.ludo;
 
+import com.example.ludo.game.Field;
+import com.example.ludo.game.Figure;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -7,15 +9,11 @@ import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 

@@ -1,11 +1,9 @@
 package com.example.ludo.screens;
 
-import com.example.ludo.Player;
-import com.example.ludo.models.NewScreenCallback;
+import com.example.ludo.game.Player;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.*;
 import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

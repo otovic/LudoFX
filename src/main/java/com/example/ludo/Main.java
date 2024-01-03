@@ -1,10 +1,8 @@
 package com.example.ludo;
 
-import com.example.ludo.screens.JoinLobbyScreen;
-import com.example.ludo.screens.LobbyScreen;
+import com.example.ludo.game.GameMode;
 import com.example.ludo.screens.StartingScreen;
 import com.example.ludo.session.Session;
-import com.example.ludo.utility.ScreenController;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

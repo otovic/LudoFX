@@ -1,6 +1,6 @@
 package com.example.ludo.screens;
 
-import com.example.ludo.Player;
+import com.example.ludo.game.Player;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.EventResponse;
 import com.example.ludo.utility.Listener;

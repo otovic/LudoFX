@@ -1,5 +1,8 @@
 package com.example.ludo;
 
+import com.example.ludo.game.Field;
+import com.example.ludo.game.Figure;
+import com.example.ludo.game.Player;
 import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
