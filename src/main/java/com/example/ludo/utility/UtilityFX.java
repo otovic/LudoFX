@@ -44,6 +44,10 @@ public class UtilityFX {
                 }
             });
 
+            if (fieldValue != null) {
+                input.setText(fieldValue);
+            }
+
             inputSet.getChildren().addAll(lblText, input);
             return inputSet;
         }

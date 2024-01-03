@@ -11,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+import java.io.*;
+
 public class StartingScreen {
     public static void initStartingScreen(final Session session) {
         RegisterScreen registerScreen = null;
@@ -88,10 +90,34 @@ public class StartingScreen {
             RegisterScreen.initRegisterScreen(session);
         });
 
+        if (!new File("server.txt").exists()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("server.txt"))) {
+                writer.write("");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader("server.txt"))) {
+            String line = reader.readLine();
+            while (line != null) {
+                server[0] = line;
+                session.setServer(server[0]);
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         container.getChildren().addAll(logIn, register, UtilityFX.createInputSet("Server: ", (data) -> {
             server[0] = data;
             serverSet[0] = session.setServer(data);
+            if (serverSet[0]) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter("server.txt"))) {
+                    writer.write(server[0]);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }, false, "localhost:8082 or 192.168.1.12:8082", session.getServer()), error);
 
         session.screenController.init(new Scene(container, 300, 300), "Ludo");

@@ -161,6 +161,7 @@ public class LobbyScreen {
         Listener listener = new Listener("lobby", (eventResponse) -> {
             Platform.runLater(() -> {
                 EventResponse response = new Gson().fromJson(eventResponse, EventResponse.class);
+                System.out.println("Lobby | Event: " + response.eventName);
                 if (response.eventName.equals("lobbyDeleted")) {
                     session.removeListener("lobby");
                     session.cancelLobby();
@@ -207,6 +208,13 @@ public class LobbyScreen {
                     }
                     checkCanStart(session, buttons, start);
                 }
+                if (response.eventName.equals("assignColor")) {
+                    String playerID = response.eventData.get("playerID");
+                    System.out.println("ID: " + playerID);
+                    int color = Integer.valueOf(response.eventData.get("color"));
+                    System.out.println("Color: " + color);
+                    session.gameMode.players.get(playerID).color = color;
+                }
                 if (response.eventName.equals("startGame")) {
                     session.removeListener("lobby");
                     GameScreen.init(session);
@@ -237,5 +245,4 @@ public class LobbyScreen {
             start.setDisable(true);
         }
     }
-
 }

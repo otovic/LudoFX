@@ -1,6 +1,5 @@
 package com.example.ludo.game;
 
-import com.example.ludo.LudoGameState;
 import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.List;
 public class GameMode {
     public String key;
     public String ownerID;
-    public LudoGameState state;
+
     public int pos = 1;
     public HashMap<String, Field> fields = new HashMap<String, Field>();
     public HashMap<String, Player> players = new HashMap<String, Player>();
@@ -22,10 +21,9 @@ public class GameMode {
     public int playersAdded = 0;
     public int playersReady = 0;
 
-    public GameMode(String key, String ownerID, LudoGameState state) {
+    public GameMode(String key, String ownerID) {
         this.key = key;
         this.ownerID = ownerID;
-        this.state = state;
     }
 
     public GameMode(final String lobbyID, final String ownerID, final Player player) {
@@ -69,9 +67,10 @@ public class GameMode {
         this.players.remove(key);
     }
 
-    public void addPlayer(final String id, final String username, final int color) {
-        this.players.put(id, new Player(this.createFigures(), color, this));
-        this.spawnPlayer(id, color);
+    public void initPlayer(final String id) {
+        Player p = this.players.get(id);
+        p.createFigures(this.createFigures(p.color));
+        this.spawnPlayer(id, p.color);
         this.playersAdded++;
     }
 
@@ -80,7 +79,7 @@ public class GameMode {
     }
 
     public void spawnPlayer(final String id, final int color) {
-        String prefix = this.getPrefix();
+        String prefix = this.getPrefix(color);
         for (Figure figure : this.players.get(id).playerFigures) {
             Field f = this.fields.get(figure.fieldID);
             f.field.getChildren().add(figure.generateFigure());
@@ -89,17 +88,17 @@ public class GameMode {
         }
     }
 
-    private String getPrefix() {
-        if(playersAdded == 0) return "b";
-        if(playersAdded == 1) return "y";
-        if(playersAdded == 2) return "r";
-        if(playersAdded == 3) return "g";
+    private String getPrefix(final int color) {
+        if(color == 1) return "b";
+        if(color == 2) return "y";
+        if(color == 3) return "r";
+        if(color == 4) return "g";
         return "";
     }
 
-    public List<Figure> createFigures() {
+    public List<Figure> createFigures(final int color) {
         List<Figure> figures = new ArrayList<Figure>();
-        String idPrefix = this.getPrefix();
+        String idPrefix = this.getPrefix(color);
         for (int i=0; i<4; i++) {
             figures.add(new Figure(idPrefix + String.valueOf(i + 1), "h" + idPrefix + String.valueOf(i + 1)));
         }
@@ -137,13 +136,17 @@ public class GameMode {
         }
     }
 
-    public void newPlayerTurn() {
-        if (this.turn + 1 > 4) {
-            this.turn = 1;
+    public void newPlayerTurn(final String rolled) {
+        if (!rolled.equals("six.png")) {
+            if (this.turn + 1 > this.players.size()) {
+                this.turn = 1;
+            } else {
+                this.turn++;
+            }
+            this.start();
         } else {
-            this.turn++;
+            this.samePlayerTurn();
         }
-        this.start();
     }
 
     public void samePlayerTurn() {
@@ -151,29 +154,12 @@ public class GameMode {
     }
 
     public void start() {
-        if (this.turn == 1) {
-            this.players.get("1").createDiceRoller();
-            this.players.get("2").createHouse();
-            this.players.get("3").createHouse();
-            this.players.get("4").createHouse();
-        }
-        if (this.turn == 2) {
-            this.players.get("2").createDiceRoller();
-            this.players.get("1").createHouse();
-            this.players.get("3").createHouse();
-            this.players.get("4").createHouse();
-        }
-        if (this.turn == 3) {
-            this.players.get("3").createDiceRoller();
-            this.players.get("1").createHouse();
-            this.players.get("2").createHouse();
-            this.players.get("4").createHouse();
-        }
-        if (this.turn == 4) {
-            this.players.get("4").createDiceRoller();
-            this.players.get("1").createHouse();
-            this.players.get("2").createHouse();
-            this.players.get("3").createHouse();
-        }
+        this.players.forEach((k, v) -> {
+            if (v.color == this.turn) {
+                v.createDiceRoller();
+            } else {
+                v.createHouse();
+            }
+        });
     }
 }
