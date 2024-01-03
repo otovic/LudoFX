@@ -1,5 +1,7 @@
 package com.example.ludo.game;
 
+import com.example.ludo.session.Session;
+import com.example.ludo.utility.EventResponse;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -12,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -23,7 +26,8 @@ public class Player {
     public List<Figure> playerFigures;
     public VBox playerBox;
     private VBox diceRoller;
-    private GameMode gameState;
+    private GameMode gameMode;
+    private Session session;
     private int max = 0;
     public boolean isReady = false;
 
@@ -33,17 +37,19 @@ public class Player {
         this.email = email;
     }
 
-
     public Player(final String key, final String username) {
         this.key = key;
         this.username = username;
     }
 
-    public Player(List<Figure> playerFigures, int color, GameMode gameState) {
+    public void createFigures(List<Figure> playerFigures) {
         this.playerFigures = playerFigures;
-        this.color = color;
-        this.gameState = gameState;
         this.max = this.setMax();
+    }
+
+    public void setGameMode(final GameMode gameMode, final Session session) {
+        this.gameMode = gameMode;
+        this.session = session;
     }
 
     public void setReady(final String isReady) {
@@ -63,6 +69,24 @@ public class Player {
         return 0;
     }
 
+    public String getImage() {
+        switch (this.color) {
+            case 1 -> {
+                return "musk.png";
+            }
+            case 2 -> {
+                return "wozniak.png";
+            }
+            case 3 -> {
+                return "obama.png";
+            }
+            case 4 -> {
+                return "sigal.png";
+            }
+        }
+        return null;
+    }
+
     public void setPlayerBox(VBox playerBox) {
         this.playerBox = playerBox;
         playerBox.setAlignment(Pos.CENTER);
@@ -73,7 +97,7 @@ public class Player {
         StackPane stackPane = new StackPane();
         stackPane.setMaxHeight(80);
         stackPane.setPrefWidth(80);
-        Image image = new Image("musk.png");
+        Image image = new Image(this.getImage());
         ImageView imageView = new ImageView(image);
         imageView.setFitHeight(80);
         imageView.setFitWidth(60);
@@ -110,7 +134,7 @@ public class Player {
     }
 
     private StackPane createBoxy(final int index) {
-        if (index <= gameState.getGotHome(this.getFieldIDBasedOnColor(this.color))) {
+        if (index <= gameMode.getGotHome(this.getFieldIDBasedOnColor(this.color))) {
             StackPane stackPane = new StackPane();
             stackPane.setMaxHeight(20);
             stackPane.setPrefWidth(20);
@@ -173,41 +197,58 @@ public class Player {
     public void createDiceRoller() {
         Image dice = new Image("one.png");
         ImageView diceView = new ImageView(dice);
-        diceView.setOnMouseClicked(event -> {
-            System.out.println("Clicked");
-            Platform.runLater(() -> {
-                Timeline timeline = new Timeline();
-                Timeline timeline1 = new Timeline();
-                for (int i = 1; i < 8; i++) {
-                    Duration duration = Duration.millis(100 * i);
-                    int finalI = i;
-                    KeyFrame keyFrame = new KeyFrame(duration, event1 -> {
+        if (this == session.player) {
+            String rolled = genDice();
+            diceView.setOnMouseClicked(event -> {
+                session.executeEvent(new EventResponse("rolledDice", new HashMap<>() {{
+                    put("rolled", rolled);
+                    put("game", gameMode.key);
+                }}, new HashMap<>(){{}}));
+            });
+        }
+        diceView.setFitHeight(50);
+        diceView.setFitWidth(50);
+        this.diceRoller.getChildren().clear();
+        this.diceRoller.getChildren().addAll(diceView);
+    }
+
+    public void roll(final String rolled) {
+        Platform.runLater(() -> {
+            Timeline timeline = new Timeline();
+            Timeline timeline1 = new Timeline();
+            for (int i = 1; i < 8; i++) {
+                Duration duration = Duration.millis(100 * i);
+                int finalI = i;
+                KeyFrame keyFrame = new KeyFrame(duration, event1 -> {
+                    if (finalI == 7) {
                         this.diceRoller.getChildren().remove(0);
-                        String rolled = genDice();
                         Image dice1 = new Image(rolled);
                         ImageView diceView1 = new ImageView(dice1);
                         diceView1.setFitHeight(50);
                         diceView1.setFitWidth(50);
                         this.diceRoller.getChildren().addAll(diceView1);
-                        if (finalI == 7) {
-                            Duration duration1 = Duration.millis(1000);
-                            KeyFrame key1 = new KeyFrame(duration1, event2 -> {
-                                this.showPossibleMoves(rolled);
-                            });
-                            timeline1.getKeyFrames().add(key1);
-                            timeline1.play();
-                        }
-                    });
-                    timeline.getKeyFrames().add(keyFrame);
-                }
-                timeline.play();
-            });
-
+                        Duration duration1 = Duration.millis(1000);
+                        KeyFrame key1 = new KeyFrame(duration1, event2 -> {
+                            session.executeEvent(new EventResponse("syncRolledDice", new HashMap<>() {{
+                                put("game", gameMode.key);
+                            }}, new HashMap<>(){{}}));
+                        });
+                        timeline1.getKeyFrames().add(key1);
+                        timeline1.play();
+                    } else {
+                        this.diceRoller.getChildren().remove(0);
+                        String move = genDice();
+                        Image dice1 = new Image(move);
+                        ImageView diceView1 = new ImageView(dice1);
+                        diceView1.setFitHeight(50);
+                        diceView1.setFitWidth(50);
+                        this.diceRoller.getChildren().addAll(diceView1);
+                    }
+                });
+                timeline.getKeyFrames().add(keyFrame);
+            }
+            timeline.play();
         });
-        diceView.setFitHeight(50);
-        diceView.setFitWidth(50);
-        this.diceRoller.getChildren().clear();
-        this.diceRoller.getChildren().addAll(diceView);
     }
 
     private int getRolledInt(final String rolled) {
@@ -241,150 +282,110 @@ public class Player {
             return !this.calculateDestinationPoistion(currentInt, roll).equals("cant");
         }
         if (currentInt + roll > 40) {
-            return gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure == null || gameState.fields.get(String.valueOf(currentInt + roll - 40)).figure.getIntColor() != this.color;
+            return gameMode.fields.get(String.valueOf(currentInt + roll - 40)).figure == null || gameMode.fields.get(String.valueOf(currentInt + roll - 40)).figure.getIntColor() != this.color;
         } else {
-            return gameState.fields.get(String.valueOf(currentInt + roll)).figure == null || gameState.fields.get(String.valueOf(currentInt + roll)).figure.getIntColor() != this.color;
+            return gameMode.fields.get(String.valueOf(currentInt + roll)).figure == null || gameMode.fields.get(String.valueOf(currentInt + roll)).figure.getIntColor() != this.color;
         }
     }
 
-    public void showPossibleMoves(final String rolled) {
-        boolean canMove = false;
-        for (Figure figure : this.playerFigures) {
-            if (rolled.equals("six.png")) {
-                if (figure.fieldID.startsWith("h")) {
-                    String fieldNumber = this.getFirstFieldBasedOnColor(figure.figureID);
-                    if (gameState.fields.get(fieldNumber).figure == null || gameState.fields.get(fieldNumber).figure.getIntColor() != this.color) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
+    public void showPossibleMoves(final String id, final String rolled) {
+        if (session.player.key.equals(id)) {
+            boolean canMove = false;
+            for (Figure figure : this.playerFigures) {
+                if (rolled.equals("six.png")) {
+                    if (figure.fieldID.startsWith("h")) {
+                        String fieldNumber = this.getFirstFieldBasedOnColor(figure.figureID);
+                        if (gameMode.fields.get(fieldNumber).figure == null || gameMode.fields.get(fieldNumber).figure.getIntColor() != this.color) {
+                            canMove = true;
+                            figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                            figure.figure.setOnMouseClicked(event -> {
+                                this.playerFigures.stream()
+                                        .forEach(f -> {
+                                            f.figure.setOnMouseClicked(null);
+                                            f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                        });
+                                session.executeEvent(new EventResponse("moveFigure", new HashMap<>() {{
+                                    put("rolled", rolled);
+                                    put("figure", figure.figureID);
+                                    put("game", gameMode.key);
+                                }}, new HashMap<>(){{}}));
+                            });
+                        }
+                    } else if (!figure.fieldID.contains("d")) {
+                        if (canMoveToNewField(rolled, figure.fieldID)) {
+                            canMove = true;
+                            figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                            figure.figure.setOnMouseClicked(event -> {
+                                this.playerFigures.stream()
+                                        .forEach(f -> {
+                                            f.figure.setOnMouseClicked(null);
+                                            f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                        });
+                                session.executeEvent(new EventResponse("moveFigure", new HashMap<>() {{
+                                    put("rolled", rolled);
+                                    put("figure", figure.figureID);
+                                    put("game", gameMode.key);
+                                }}, new HashMap<>(){{}}));
+                            });
+                        }
                     }
-                } else if (!figure.fieldID.contains("d")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
-                    }
-                }
-            }
-            if (rolled.equals("one.png")) {
-                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
-                    }
-                }
-            }
-            if (rolled.equals("two.png")) {
-                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
+                } else {
+                    if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
+                        if (canMoveToNewField(rolled, figure.fieldID)) {
+                            canMove = true;
+                            figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
+                            figure.figure.setOnMouseClicked(event -> {
+                                this.playerFigures.stream()
+                                        .forEach(f -> {
+                                            f.figure.setOnMouseClicked(null);
+                                            f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
+                                        });
+                                session.executeEvent(new EventResponse("moveFigure", new HashMap<>() {{
+                                    put("rolled", rolled);
+                                    put("figure", figure.figureID);
+                                    put("game", gameMode.key);
+                                }}, new HashMap<>(){{}}));
+                            });
+                        }
                     }
                 }
             }
-            if (rolled.equals("three.png")) {
-                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
-                    }
-                }
+            if (!canMove) {
+                System.out.println("NEMA");
+                session.executeEvent(new EventResponse("syncShowMoves", new HashMap<>() {{
+                    put("game", gameMode.key);
+                }}, new HashMap<>(){{}}));
             }
-            if (rolled.equals("four.png")) {
-                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
-                    }
-                }
-            }
-            if (rolled.equals("five.png")) {
-                if (!figure.fieldID.contains("d") && !figure.fieldID.contains("h")) {
-                    if (canMoveToNewField(rolled, figure.fieldID)) {
-                        canMove = true;
-                        figure.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: green; -fx-border-width: 2px; -fx-border-radius: 50;");
-                        figure.figure.setOnMouseClicked(event -> {
-                            this.playerFigures.stream()
-                                    .forEach(f -> {
-                                        f.figure.setOnMouseClicked(null);
-                                        f.figure.setStyle("-fx-background-color: " + figure.getHexColor() + "; -fx-background-radius: 50; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 50;");
-                                    });
-                            this.moveFigure(rolled, figure);
-                        });
-                    }
-                }
-            }
-        }
-        if (!canMove) {
-            System.out.println(canMove);
-            gameState.newPlayerTurn();
+        } else {
+            session.executeEvent(new EventResponse("syncShowMoves", new HashMap<>() {{
+                put("game", gameMode.key);
+            }}, new HashMap<>(){{}}));
         }
     }
 
     private void moveFigureFromHome(final Figure figure) {
-        gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-        gameState.fields.get(figure.fieldID).figure = null;
+        gameMode.fields.get(figure.fieldID).field.getChildren().removeAll();
+        gameMode.fields.get(figure.fieldID).figure = null;
         String firstField = getFirstFieldBasedOnColor(figure.figureID);
         this.removeChildrenFromField(firstField);
-        gameState.fields.get(firstField).field.getChildren().add(figure.figure);
-        gameState.fields.get(firstField).figure = figure;
+        gameMode.fields.get(firstField).field.getChildren().add(figure.figure);
+        gameMode.fields.get(firstField).figure = figure;
         figure.fieldID = firstField;
-        gameState.samePlayerTurn();
+        session.executeEvent(new EventResponse("syncMoveFigure", new HashMap<>() {{
+            put("rolled", "six.png");
+            put("figure", figure.figureID);
+            put("game", gameMode.key);
+        }}, new HashMap<>(){{}}));
+//        gameMode.samePlayerTurn();
     }
 
     private void moveFigureToHome(final int rolled, final Figure figure) {
         int pos = Integer.parseInt(figure.fieldID);
         final String destinationField = this.calculateDestinationPoistion(pos, rolled);
-        gameState.gotHome(figure.getColor());
+        gameMode.gotHome(figure.getColor());
         Timeline timeline = new Timeline();
         for (int i = 1; i < rolled + 1; i++) {
-            Duration duration = Duration.millis(500 * i);
+            Duration duration = Duration.millis(100 * i);
             int finalI = i;
             KeyFrame keyFrame = new KeyFrame(duration, event -> {
                 String nextPosition = "";
@@ -400,26 +401,31 @@ public class Player {
                     nextPosition = String.valueOf(pos + finalI);
                 }
                 if (finalI == 1) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().clear();
-                    gameState.fields.get(figure.fieldID).figure = null;
-                } else if (gameState.fields.get(figure.fieldID).figure != null) {
-                    gameState.fields.get(figure.fieldID).field.getChildren().remove(1,2);
+                    gameMode.fields.get(figure.fieldID).field.getChildren().clear();
+                    gameMode.fields.get(figure.fieldID).figure = null;
+                } else if (gameMode.fields.get(figure.fieldID).figure != null) {
+                    gameMode.fields.get(figure.fieldID).field.getChildren().remove(1,2);
                 } else {
-                    gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                    gameMode.fields.get(figure.fieldID).field.getChildren().clear();
                 }
                 if (finalI == rolled) {
                     this.removeChildrenFromField(String.valueOf(nextPosition));
-                    gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                    gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                    gameMode.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                    gameMode.fields.get(String.valueOf(nextPosition)).figure = figure;
                     figure.fieldID = String.valueOf(nextPosition);
-                    if (rolled == 6) {
-                        gameState.samePlayerTurn();
-                    } else {
-                        gameState.newPlayerTurn();
-                    }
+//                    if (rolled == 6) {
+//                        gameMode.samePlayerTurn();
+//                    } else {
+//                        gameMode.newPlayerTurn(session);
+//                    }
+                    session.executeEvent(new EventResponse("syncMoveFigure", new HashMap<>() {{
+                        put("rolled", String.valueOf(rolled) + ".png");
+                        put("figure", figure.figureID);
+                        put("game", gameMode.key);
+                    }}, new HashMap<>(){{}}));
                 } else {
                     figure.fieldID = nextPosition;
-                    gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                    gameMode.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                 }
             });
             timeline.getKeyFrames().add(keyFrame);
@@ -428,7 +434,7 @@ public class Player {
     }
 
     private void moveFigureRegular(final int rolled, final Figure figure) {
-        gameState.fields.get(figure.fieldID).figure = null;
+        gameMode.fields.get(figure.fieldID).figure = null;
         int pos = Integer.parseInt(figure.fieldID);
         if (pos <= this.max && pos + rolled > this.max) {
             this.moveFigureToHome(rolled, figure);
@@ -445,26 +451,31 @@ public class Player {
                         nextPosition = pos + finalI;
                     }
                     if (finalI == 1) {
-                        gameState.fields.get(figure.fieldID).field.getChildren().clear();
-                        gameState.fields.get(figure.fieldID).figure = null;
-                    } else if (gameState.fields.get(figure.fieldID).figure != null) {
-                        gameState.fields.get(figure.fieldID).field.getChildren().remove(1,2);
+                        gameMode.fields.get(figure.fieldID).field.getChildren().clear();
+                        gameMode.fields.get(figure.fieldID).figure = null;
+                    } else if (gameMode.fields.get(figure.fieldID).figure != null) {
+                        gameMode.fields.get(figure.fieldID).field.getChildren().remove(1,2);
                     } else {
-                        gameState.fields.get(figure.fieldID).field.getChildren().clear();
+                        gameMode.fields.get(figure.fieldID).field.getChildren().clear();
                     }
                     if (finalI == rolled) {
                         this.removeChildrenFromField(String.valueOf(nextPosition));
-                        gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
-                        gameState.fields.get(String.valueOf(nextPosition)).figure = figure;
+                        gameMode.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                        gameMode.fields.get(String.valueOf(nextPosition)).figure = figure;
                         figure.fieldID = String.valueOf(nextPosition);
-                        if (rolled == 6) {
-                            gameState.samePlayerTurn();
-                        } else {
-                            gameState.newPlayerTurn();
-                        }
+//                        if (rolled == 6) {
+//                            gameMode.samePlayerTurn();
+//                        } else {
+//                            gameMode.newPlayerTurn(session);
+//                        }
+                        session.executeEvent(new EventResponse("syncMoveFigure", new HashMap<>() {{
+                            put("rolled", String.valueOf(rolled) + ".png");
+                            put("figure", figure.figureID);
+                            put("game", gameMode.key);
+                        }}, new HashMap<>(){{}}));
                     } else {
                         figure.fieldID = String.valueOf(nextPosition);
-                        gameState.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
+                        gameMode.fields.get(String.valueOf(nextPosition)).field.getChildren().add(figure.figure);
                     }
                 });
                 timeline.getKeyFrames().add(keyFrame);
@@ -501,7 +512,7 @@ public class Player {
         if (left > 4) {
             return "cant";
         } else {
-            if (gameState.fields.get("d" + getFieldIDBasedOnColor(this.color) + String.valueOf(left)).figure != null) {
+            if (gameMode.fields.get("d" + getFieldIDBasedOnColor(this.color) + String.valueOf(left)).figure != null) {
                 return "cant";
             }
             return "d" + getFieldIDBasedOnColor(this.color) + String.valueOf(left);
@@ -509,33 +520,33 @@ public class Player {
     }
 
     private void removeChildrenFromField(final String fieldID) {
-        Field field = gameState.fields.get(fieldID);
+        Field field = gameMode.fields.get(fieldID);
         if (field.figure != null) {
             Figure figure = field.figure;
             String presentFigureID = field.figure.getColor();
             for (int i = 1; i < 5; i++) {
-                if (this.gameState.fields.get("h" + presentFigureID + i).figure == null) {
-                    this.gameState.fields.get("h" + presentFigureID + i).figure = figure;
-                    this.gameState.fields.get("h" + presentFigureID + i).field.getChildren().add(figure.figure);
+                if (this.gameMode.fields.get("h" + presentFigureID + i).figure == null) {
+                    this.gameMode.fields.get("h" + presentFigureID + i).figure = figure;
+                    this.gameMode.fields.get("h" + presentFigureID + i).field.getChildren().add(figure.figure);
                     figure.fieldID = "h" + presentFigureID + i;
                     break;
                 }
             }
-            gameState.fields.get(fieldID).field.getChildren().clear();
-            gameState.fields.get(fieldID).color = null;
-            gameState.fields.get(fieldID).figure = null;
+            gameMode.fields.get(fieldID).field.getChildren().clear();
+            gameMode.fields.get(fieldID).color = null;
+            gameMode.fields.get(fieldID).figure = null;
         } else {
-            gameState.fields.get(fieldID).field.getChildren().clear();
-            gameState.fields.get(fieldID).color = null;
-            gameState.fields.get(fieldID).figure = null;
+            gameMode.fields.get(fieldID).field.getChildren().clear();
+            gameMode.fields.get(fieldID).color = null;
+            gameMode.fields.get(fieldID).figure = null;
         }
     }
 
     private void sendFigureHome(final Figure figure) {
-        gameState.fields.get(figure.fieldID).field.getChildren().removeAll();
-        gameState.fields.get(figure.fieldID).color = null;
-        gameState.fields.get("h" + getFieldIDBasedOnColor(this.color) + figure.figureID.split("")[1]).field.getChildren().add(figure.figure);
-        gameState.fields.get("h" + getFieldIDBasedOnColor(this.color) + figure.figureID.split("")[1]).color = this.color;
+        gameMode.fields.get(figure.fieldID).field.getChildren().removeAll();
+        gameMode.fields.get(figure.fieldID).color = null;
+        gameMode.fields.get("h" + getFieldIDBasedOnColor(this.color) + figure.figureID.split("")[1]).field.getChildren().add(figure.figure);
+        gameMode.fields.get("h" + getFieldIDBasedOnColor(this.color) + figure.figureID.split("")[1]).color = this.color;
         figure.fieldID = "h" + getFieldIDBasedOnColor(this.color) + figure.figureID.split("")[1];
     }
 

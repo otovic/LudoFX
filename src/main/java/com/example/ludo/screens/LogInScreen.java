@@ -1,5 +1,6 @@
 package com.example.ludo.screens;
 
+import com.example.ludo.game.Figure;
 import com.example.ludo.game.Player;
 import com.example.ludo.session.Session;
 import com.example.ludo.utility.EventResponse;
@@ -14,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+import java.io.*;
 import java.util.HashMap;
 
 public class LogInScreen {
@@ -39,6 +41,12 @@ public class LogInScreen {
                 error.setStyle("-fx-text-fill: red;");
                 error.setText("Please fill all the fields");
                 return;
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("credentials.txt"))) {
+                writer.write(username[0] + " " + password[0]);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
 
             session.setTask(() -> {
@@ -86,11 +94,30 @@ public class LogInScreen {
             StartingScreen.initStartingScreen(session);
         });
 
+        if (!new File("credentials.txt").exists()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("credentials.txt"))) {
+                writer.write("");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("credentials.txt"))) {
+            String line = reader.readLine();
+            if (line != null) {
+                String[] credentials = line.split(" ");
+                username[0] = credentials[0];
+                password[0] = credentials[1];
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         container.getChildren().addAll(UtilityFX.createInputSet("Username", (String usrnm) -> {
             username[0] = usrnm;
-        }, false, "Username", null), UtilityFX.createInputSet("Password", (String pass) -> {
+        }, false, "Username", username[0] != null ? username[0] : null), UtilityFX.createInputSet("Password", (String pass) -> {
             password[0] = pass;
-        }, true, "Password", null), logIn, back, error);
+        }, true, "Password", password[0] != null ? password[0] : null), logIn, back, error);
 
         session.screenController.init(new Scene(container, 300, 300), "Log In");
     }
