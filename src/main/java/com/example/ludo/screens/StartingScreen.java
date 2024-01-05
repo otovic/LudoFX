@@ -13,6 +13,15 @@ import javafx.scene.layout.VBox;
 
 import java.io.*;
 
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 public class StartingScreen {
     public static void initStartingScreen(final Session session) {
         RegisterScreen registerScreen = null;

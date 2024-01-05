@@ -209,6 +209,10 @@ public class GameScreen {
                         });
                     }, 100, TimeUnit.MILLISECONDS);
                 }
+                if (response.eventName.equals("lobbyDeleted") || response.eventName.equals("playerLeftLobby")) {
+                    String playerID = response.eventData.get("playerID");
+                    session.gameMode.playerLeftGame(playerID, session);
+                }
             });
         });
 
