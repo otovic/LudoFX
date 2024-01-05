@@ -382,7 +382,7 @@ public class Player {
     private void moveFigureToHome(final int rolled, final Figure figure) {
         int pos = Integer.parseInt(figure.fieldID);
         final String destinationField = this.calculateDestinationPoistion(pos, rolled);
-        gameMode.gotHome(figure.getColor());
+        gameMode.gotHome(figure.getColor(), session, username);
         Timeline timeline = new Timeline();
         for (int i = 1; i < rolled + 1; i++) {
             Duration duration = Duration.millis(100 * i);
@@ -519,7 +519,7 @@ public class Player {
         }
     }
 
-    private void removeChildrenFromField(final String fieldID) {
+    public void removeChildrenFromField(final String fieldID) {
         Field field = gameMode.fields.get(fieldID);
         if (field.figure != null) {
             Figure figure = field.figure;

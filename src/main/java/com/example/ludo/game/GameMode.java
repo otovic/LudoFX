@@ -1,7 +1,11 @@
 package com.example.ludo.game;
 
+import com.example.ludo.screens.GameOver;
+import com.example.ludo.session.Session;
+import com.example.ludo.utility.EventResponse;
 import javafx.scene.layout.Pane;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +71,46 @@ public class GameMode {
         this.players.remove(key);
     }
 
+    public void playerLeftGame(final String key, final Session session) {
+        Player p = this.players.get(key);
+        p.playerFigures.forEach(figure -> {
+            p.removeChildrenFromField(figure.fieldID);
+        });
+        if (p.color == this.turn) {
+            this.newPlayerTurn("one.png");
+        }
+        if (p.color == 1) {
+            this.blueDestinationReached = 0;
+        }
+        if (p.color == 2) {
+            this.yellowDestinationReached = 0;
+        }
+        if (p.color == 3) {
+            this.redDestinationReached = 0;
+        }
+        if (p.color == 4) {
+            this.greenDestinationReached = 0;
+        }
+        this.players.remove(key);
+
+        if (session.player.key.equals(this.ownerID)) {
+            if (this.players.size() == 0) {
+                session.executeEvent(new EventResponse("gameOverDelete", new HashMap<>() {{
+                    put("game", session.gameMode.key);
+                }}, new HashMap<>()));
+            }
+        }
+
+        if (this.players.size() == 1) {
+            session.removeListener("game");
+            session.executeEvent(new EventResponse("gameOver", new HashMap<>() {{
+                put("game", session.gameMode.key);
+            }}, new HashMap<>()));
+            this.playersReady = 0;
+            GameOver.init(session, this.players.get(this.players.keySet().toArray()[0]).username);
+        }
+    }
+
     public void initPlayer(final String id) {
         Player p = this.players.get(id);
         p.createFigures(this.createFigures(p.color));
@@ -121,7 +165,7 @@ public class GameMode {
         return 0;
     }
 
-    public void gotHome(final String color) {
+    public void gotHome(final String color, final Session session, final String username) {
         if (color.equals("b")) {
             this.blueDestinationReached++;
         }
@@ -133,6 +177,12 @@ public class GameMode {
         }
         if (color.equals("g")) {
             this.greenDestinationReached++;
+        }
+        if (this.blueDestinationReached == 4 || this.yellowDestinationReached == 4 || this.redDestinationReached == 4 || this.greenDestinationReached == 4) {
+            session.executeEvent(new EventResponse("gameOver", new HashMap<>() {{
+                put("game", session.gameMode.key);
+            }}, new HashMap<>()));
+            GameOver.init(session, username);
         }
     }
 
