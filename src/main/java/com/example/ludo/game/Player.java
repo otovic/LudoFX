@@ -588,4 +588,21 @@ public class Player {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "key='" + key + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", color=" + color +
+                ", playerFigures=" + playerFigures +
+                ", playerBox=" + playerBox +
+                ", diceRoller=" + diceRoller +
+                ", gameMode=" + gameMode +
+                ", session=" + session +
+                ", max=" + max +
+                ", isReady=" + isReady +
+                '}';
+    }
 }

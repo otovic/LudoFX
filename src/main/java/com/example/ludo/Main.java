@@ -14,12 +14,11 @@ import java.io.IOException;
 public class Main extends Application {
     public Session session = new Session();
     public GameMode gameMode;
+    
     @Override
     public void start(Stage stage) throws IOException {
         this.session.screenController.setStage(stage);
-//        LobbyScreen.init(this.session);
         StartingScreen.initStartingScreen(this.session);
-//        JoinLobbyScreen.init(this.session);
     }
 
     public static void main(String[] args) {

@@ -12,4 +12,13 @@ public class Field {
         this.figure = figure;
         this.field = field;
     }
+
+    @Override
+    public String toString() {
+        return "Field{" +
+                "color=" + color +
+                ", figure=" + figure +
+                ", field=" + field +
+                '}';
+    }
 }
