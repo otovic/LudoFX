@@ -74,4 +74,13 @@ public class Figure {
         this.figure = figure;
         return figure;
     }
+
+    @Override
+    public String toString() {
+        return "Figure{" +
+                "figureID='" + figureID + '\'' +
+                ", fieldID='" + fieldID + '\'' +
+                ", figure=" + figure +
+                '}';
+    }
 }

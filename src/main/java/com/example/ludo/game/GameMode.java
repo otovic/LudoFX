@@ -212,4 +212,22 @@ public class GameMode {
             }
         });
     }
+
+    @Override
+    public String toString() {
+        return "GameMode{" +
+                "key='" + key + '\'' +
+                ", ownerID='" + ownerID + '\'' +
+                ", pos=" + pos +
+                ", fields=" + fields +
+                ", players=" + players +
+                ", turn=" + turn +
+                ", blueDestinationReached=" + blueDestinationReached +
+                ", yellowDestinationReached=" + yellowDestinationReached +
+                ", redDestinationReached=" + redDestinationReached +
+                ", greenDestinationReached=" + greenDestinationReached +
+                ", playersAdded=" + playersAdded +
+                ", playersReady=" + playersReady +
+                '}';
+    }
 }

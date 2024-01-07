@@ -131,4 +131,19 @@ public class Session {
         this.executeEvent(new EventResponse("logout", new HashMap<>(), new HashMap<>()));
         this.player = null;
     }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "screenController=" + screenController +
+                ", outputStream=" + outputStream +
+                ", listeners=" + listeners +
+                ", player=" + player +
+                ", serverAddress='" + serverAddress + '\'' +
+                ", serverPort=" + serverPort +
+                ", gameMode=" + gameMode +
+                ", thread=" + thread +
+                ", events=" + events +
+                '}';
+    }
 }
